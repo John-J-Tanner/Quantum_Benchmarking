@@ -3,6 +3,7 @@ from scipy.optimize import minimize
 import networkx as nx
 from unitaries import hypercube_mixer, phase_shift
 
+
 def maxcut_qualities(G, wires):
     """
     Return the Hamiltonian for a maxcut problem.
@@ -16,7 +17,6 @@ def maxcut_qualities(G, wires):
 
 
 def ansatz(gammas, ts, wires, qualities, get_state=False):
-
     wires = list(wires)
 
     # prepare an equal superposition
@@ -37,7 +37,6 @@ def ansatz(gammas, ts, wires, qualities, get_state=False):
 
 
 def qaoa(wires, depth, qualities):
-
     params = qml.numpy.random.uniform(size=2 * depth, low=0, high=2 * qml.numpy.pi)
 
     def objective(params):
@@ -50,11 +49,11 @@ def qaoa(wires, depth, qualities):
 
     return result
 
-if __name__ == "__main__":
 
+if __name__ == "__main__":
     qml.numpy.random.seed(1)
     n_wires = 11
-    dev = qml.device('default.qubit', wires = n_wires)
+    dev = qml.device("default.qubit", wires=n_wires)
     wires = range(n_wires)
 
     G = nx.erdos_renyi_graph(n_wires, p=0.5, seed=42, directed=False)
