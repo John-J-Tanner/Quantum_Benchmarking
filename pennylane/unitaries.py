@@ -1,7 +1,9 @@
 import pennylane as qml
+import pennylane.numpy as np
 from toolkit import *
 from functools import reduce
 from operator import matmul
+import networkx as nx
 
 
 def bin_array(num, m):
@@ -31,6 +33,9 @@ def diagonal_pauli_decompose(diag):
     Assumes that the length of diag is a power of two.
     Uses scipy sparse matrices.
     """
+
+    diag = np.array(diag)
+
     N = len(diag)
     n = int(qml.numpy.log2(N))
 
@@ -103,7 +108,7 @@ def phase_shift(t, wires, Hamiltonian):
     for word, coeff in zip(Hamiltonian.ops, Hamiltonian.coeffs):
         active_wires = []
 
-        for pgate, wire in zip(word.name, word.wires):
+        for pgate, wire in zip(word.name, wires):
             if pgate == "PauliZ":
                 active_wires.append(wire)
 
@@ -152,43 +157,22 @@ def hypercube_mixer(t, wires):
         qml.MultiRZ(theta, wires=wire)
         qml.Hadamard(wire)
 
+def qmoa_hamiltonian(G, dim, wires):
 
-if __name__ == "__main__":
-    n_wires = 3
-    dev = qml.device("default.qubit", wires=n_wires)
-    wires = range(n_wires)
+    wires = np.array(list(wires))
+    dim_wires = np.split(wires,dim)
 
-    @qml.qnode(dev)
-    def hypercube_walk():
-        hypercube_mixer(1, wires)
-        return qml.probs()
+    G = nx.to_scipy_sparse_matrix(G)
 
-    print(hypercube_walk())
+    terms = [[I(int(np.log2(G.shape[0]))) for _ in range(dim)] for _ in range(dim)]
+    print(terms) 
+    kron_terms = []
 
-    n_wires = 4
-    dev = qml.device("default.qubit", wires=n_wires)
-    wires = range(n_wires)
+    for i, term in enumerate(terms):
+        term[i] = G
+        kron_terms.append(kron(term))
 
-    n_graph_wires = n_wires - 1
-
-    H = decompose_eigenfunction(complete_eigenfunction, 2**n_graph_wires)
-
-    @qml.qnode(dev)
-    def complete_walk():
-        circulant_mixer(1, wires, H)
-        return qml.probs(wires=list(wires)[:-1])
-
-    print(complete_walk())
-
-    n_wires = 3
-    dev = qml.device("default.qubit", wires=n_wires)
-    wires = range(n_wires)
-
-    H = decompose_eigenfunction(complete_eigenfunction, 2**n_wires)
-
-    @qml.qnode(dev)
-    def complete_walk_2():
-        circulant_mixer_2(1, wires, H)
-        return qml.probs()
-
-    print(complete_walk_2())
+    hamiltonian_matrix = np.sum(kron_terms)
+    
+    # should modify so the conversion occurs with a sparse Hamiltonian.
+    return qml.pauli_decompose(hamiltonian_matrix.todense())
