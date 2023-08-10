@@ -24,8 +24,6 @@ def qmoa_hamiltonians(G, dim, wires, base_mixer = None):
 
     G = nx.to_scipy_sparse_array(G)
 
-    print(G)
-
     terms = [[I(int(np.log2(G.shape[0]))) for _ in range(dim)] for _ in range(dim)]
 
     kron_terms = []
@@ -36,7 +34,6 @@ def qmoa_hamiltonians(G, dim, wires, base_mixer = None):
 
     hamiltonians = []
     for term in kron_terms:
-        print(wires)
         hamiltonians.append(qmoa_pauli_string(term, wires, base_mixer = base_mixer))
 
     return dim_wires, hamiltonians
@@ -134,13 +131,12 @@ def styblinski_tang_qualities(t, dim_wires, hamiltonian):
 
 
 
-n_wires = 2*2
-wires_per_dim = 2
+n_wires = 8
+wires_per_dim = 4
 dev = qml.device("default.qubit", wires=n_wires)
 wires = range(n_wires)
 
 qualities_1D = diagonal_pauli_decompose([styblinski_tang([-5 + i*10/3]) for i in range(4)])
-print(qualities_1D)
 
 G = nx.complete_graph(2**wires_per_dim)
 
@@ -150,12 +146,9 @@ dim_wires, H = qmoa_hamiltonians(G, 2, wires, base_mixer = 'complete')
 def circuit():
     for wire in range(n_wires):
         qml.Hadamard(wires=wire)
-    styblinski_tang_qualities(1.0, [[2,3],[0,1]], qualities_1D)
+    styblinski_tang_qualities(1.0, dim_wires, qualities_1D)
+    qmoa_hamiltonian_evolution([1, 2], dim_wires, H)
     return qml.state()
 
-#qmoa_hamiltonian_evolution([2.5, 1.5], dim_wires, H)
 drawer = qml.draw(circuit)
 print(drawer())
-state = circuit()
-print(state)
-
