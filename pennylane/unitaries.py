@@ -108,7 +108,7 @@ def phase_shift(t, wires, Hamiltonian):
     for word, coeff in zip(Hamiltonian.ops, Hamiltonian.coeffs):
         active_wires = []
 
-        for pgate, wire in zip(word.name, wires):
+        for pgate, wire in zip(word.name, word.wires):
             if pgate == "PauliZ":
                 active_wires.append(wire)
 
