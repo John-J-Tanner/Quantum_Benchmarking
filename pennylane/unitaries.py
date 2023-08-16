@@ -17,7 +17,7 @@ def cycle_eigenfunction(x, N):
     return 2 * qml.numpy.cos(2 * x * qml.numpy.pi / N)
 
 
-def complete_eigenfunction(x, N):
+def complete_eigenvalues(N):
     eigenvalues = -qml.numpy.ones(N)
     eigenvalues[0] = N - 1
     return eigenvalues
@@ -113,6 +113,7 @@ def phase_shift(t, wires, Hamiltonian):
                 active_wires.append(wire)
 
         if len(active_wires) != 0:
+
             for w in active_wires[:-1]:
                 qml.CNOT(wires=[w, active_wires[-1]])
 
@@ -129,7 +130,7 @@ def circulant_mixer(t, wires, eigen_decomp):
     wires = list(wires)
     qml.QFT(wires=wires[:-1])
     hamiltonian_evolution(t, wires, eigen_decomp)
-    qml.QFT(wires=wires[:-1])
+    qml.adjoint(qml.QFT)(wires=wires)
 
 
 def circulant_mixer_2(t, wires, eigen_decomp):
@@ -139,7 +140,7 @@ def circulant_mixer_2(t, wires, eigen_decomp):
     wires = list(wires)
     qml.QFT(wires=wires)
     phase_shift(t, wires, eigen_decomp)
-    qml.QFT(wires=wires)
+    qml.adjoint(qml.QFT)(wires=wires)
 
 
 def hypercube_mixer(t, wires):
@@ -165,7 +166,7 @@ def qmoa_hamiltonian(G, dim, wires):
     G = nx.to_scipy_sparse_matrix(G)
 
     terms = [[I(int(np.log2(G.shape[0]))) for _ in range(dim)] for _ in range(dim)]
-    print(terms) 
+
     kron_terms = []
 
     for i, term in enumerate(terms):
