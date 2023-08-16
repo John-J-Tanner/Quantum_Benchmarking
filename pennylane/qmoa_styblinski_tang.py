@@ -125,30 +125,25 @@ def styblinski_tang(x):
     x = np.array(x)
     return 0.5 * (5 * x - 16 * x**2 + x**4).sum()
 
-def styblinski_tang_qualities(t, dim_wires, hamiltonian):
-    for wires in dim_wires:
-        phase_shift(t, wires, hamiltonian)
-
-
-
-n_wires = 8
-wires_per_dim = 4
-dev = qml.device("default.qubit", wires=n_wires)
-wires = range(n_wires)
-
-qualities_1D = diagonal_pauli_decompose([styblinski_tang([-5 + i*10/3]) for i in range(4)])
-
-G = nx.complete_graph(2**wires_per_dim)
-
-dim_wires, H = qmoa_hamiltonians(G, 2, wires, base_mixer = 'complete')
-
-@qml.qnode(dev)
-def circuit():
-    for wire in range(n_wires):
-        qml.Hadamard(wires=wire)
-    styblinski_tang_qualities(1.0, dim_wires, qualities_1D)
-    qmoa_hamiltonian_evolution([1, 2], dim_wires, H)
-    return qml.state()
-
-drawer = qml.draw(circuit)
-print(drawer())
+def styblinski_tang_hamiltonian(dim_wires, qubits_per_dim):
+    grid_points = 2**qubits_per_dim 
+    qualities_1D = diagonal_pauli_decompose([styblinski_tang([-5 + i*10/grid_points]) for i in range(grid_points)])
+    coeffs = [] 
+    obs = []
+    for dim_wire_set in dim_wires:
+        for coeff, op in zip(qualities_1D.coeffs, qualities_1D.ops):
+            wtemp = None
+            for name, wire in zip(op.name, op.wires):
+                if name == 'Identity':
+                    if wtemp == None:
+                        wtemp = qml.Identity(dim_wire_set[wire])
+                    else:
+                        wtemp @= qml.Identity(dim_wire_set[wire])
+                elif name == 'PauliZ':
+                    if wtemp ==  None:
+                        wtemp = qml.PauliZ(dim_wire_set[wire])
+                    else:
+                        wtemp @= qml.PauliZ(dim_wire_set[wire])
+            obs.append(wtemp)
+            coeffs.append(coeff)
+    return qml.Hamiltonian(coeffs, obs)
