@@ -36,7 +36,7 @@ def ansatz(gammas, ts, wires, qualities, get_state=False):
     return qml.expval(qualities)
 
 
-def qaoa(wires, depth, qualities):
+def qaoa(wires, depth, qualities, ansatz):
     params = qml.numpy.random.uniform(size=2 * depth, low=0, high=2 * qml.numpy.pi)
 
     def objective(params):
@@ -63,4 +63,4 @@ if __name__ == "__main__":
 
     depth = 1
 
-    qaoa(wires, depth, qualities)
+    qaoa(wires, depth, qualities, ansatz)
