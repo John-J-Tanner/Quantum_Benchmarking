@@ -6,7 +6,7 @@ from toolkit import *
 from functools import reduce
 from operator import matmul
 import networkx as nx
-from unitaries import diagonal_pauli_decompose, phase_shift
+from unitaries import diagonal_pauli_decompose
 
 from scipy.sparse import csr_matrix as csr
 
