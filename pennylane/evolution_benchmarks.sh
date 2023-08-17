@@ -30,7 +30,7 @@ do
 				do
 					echo Running repeat $repeat with $backend backend for $ansatz evolution with $qubits qubits at $depth depth...
 					start=$EPOCHREALTIME
-					output=$(python3.9 evolution_benchmark.py $backend ${ansatz_modules[$ansatz_index]} $ansatz $qubits $depth $n_expval ${ansatz_args[$ansatz_index]})
+					output=$(python3 evolution_benchmark.py $backend ${ansatz_modules[$ansatz_index]} $ansatz $qubits $depth $n_expval ${ansatz_args[$ansatz_index]})
 					end=$EPOCHREALTIME
 					n_outvals=$(echo $output | grep -o ',' | wc -l)
 					if [[ $n_outvals -eq 2 ]]
