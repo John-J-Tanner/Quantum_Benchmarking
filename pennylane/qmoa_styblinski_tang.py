@@ -1,4 +1,5 @@
 from itertools import product
+from time import time
 import pennylane as qml
 # correct this
 import numpy as np
@@ -6,7 +7,7 @@ from toolkit import *
 from functools import reduce
 from operator import matmul
 import networkx as nx
-from unitaries import diagonal_pauli_decompose
+from unitaries import diagonal_pauli_decompose, phase_shift
 
 from scipy.sparse import csr_matrix as csr
 
@@ -16,31 +17,6 @@ pauli_terms = {
     'Z': Z(0, 1),
     'I': I(1)
 }
-
-
-def qmoa_hamiltonians(G, dim, wires, base_mixer=None):
-
-    wires = np.array(list(wires))
-    dim_wires = np.split(wires, dim)
-
-    G = nx.to_scipy_sparse_array(G)
-
-    terms = [[I(int(np.log2(G.shape[0]))) for _ in range(dim)]
-             for _ in range(dim)]
-
-    kron_terms = []
-
-    for i, term in enumerate(terms):
-        term[i] = G
-        kron_terms.append(kron(term))
-
-    hamiltonians = []
-    for term in kron_terms:
-        hamiltonians.append(qmoa_pauli_string(
-            term, wires, base_mixer=base_mixer))
-
-    return dim_wires, hamiltonians
-
 
 def qmoa_pauli_string(matrix, wires, base_mixer=None):
 
@@ -78,16 +54,16 @@ def qmoa_pauli_string(matrix, wires, base_mixer=None):
     return qml.Hamiltonian(coeffs, obs)
 
 
-def qmoa_hamiltonian_evolution(ts, dim_wires, Hamiltonians):
+def qmoa_hamiltonian_evolution(ts, dim_wires, graph_hamiltonian):
     """
     No ancilla qubit.
 
     Note: Only functional for the complete graph case.
     """
 
-    for t, wires, Hamiltonian in zip(ts, dim_wires, Hamiltonians):
+    for t, dim_wire in zip(ts, dim_wires):
 
-        for word, coeff in zip(Hamiltonian.ops, Hamiltonian.coeffs):
+        for word, coeff in zip(graph_hamiltonian.ops, graph_hamiltonian.coeffs):
 
             nonidentity = [pgate for pgate in word.name if pgate != 'Identity']
             nonidentity_wires = [wire for wire, pgate in zip(
@@ -100,31 +76,32 @@ def qmoa_hamiltonian_evolution(ts, dim_wires, Hamiltonians):
 
             for pgate, wire in zip(nonidentity, nonidentity_wires):
                 if pgate == "PauliX":
-                    qml.Hadamard(wires=wire)
+                    qml.Hadamard(wires=dim_wire[wire])
                 elif pgate == "PauliY":
-                    qml.RZ(-3*qml.numpy.pi/4, wires=wire)
-                    qml.RY(qml.numpy.pi/4, wires=wire)
-                    qml.RZ(-3*qml.numpy.pi/4, wires=wire)
+                    qml.RZ(-3*qml.numpy.pi/4, wires=dim_wire[wire])
+                    qml.RY(qml.numpy.pi/4, wires=dim_wire[wire])
+                    qml.RZ(-3*qml.numpy.pi/4, wires=dim_wire[wire])
 
             for i, (pgate, wire) in enumerate(zip(nonidentity, nonidentity_wires)):
                 if (wire < wires_max) and (pgate != 'Identity'):
-                    qml.CNOT(wires=[wire, nonidentity_wires[i + 1]])
+                    qml.CNOT(wires=[dim_wire[wire], dim_wire[nonidentity_wires[i + 1]]])
 
-            qml.RZ(2 * t * coeff, wires=wires_max)
+            qml.RZ(2 * t * coeff, wires=dim_wire[wires_max])
 
             for i, (pgate, wire) in enumerate(zip(reversed(nonidentity), reversed(nonidentity_wires))):
 
                 if (wire < wires_max) and (pgate != 'Identity'):
-                    qml.CNOT(wires=[wire, nonidentity_wires[-i]])
+                    qml.CNOT(wires=[dim_wire[wire], dim_wire[nonidentity_wires[-i]]])
 
             for pgate, wire in zip(nonidentity, nonidentity_wires):
 
                 if pgate == "PauliX":
-                    qml.Hadamard(wires=wire)
+                    qml.Hadamard(wires=dim_wire[wire])
                 elif pgate == "PauliY":
-                    qml.RZ(3*qml.numpy.pi/4, wires=wire)
-                    qml.RY(-qml.numpy.pi/4, wires=wire)
-                    qml.RZ(3*qml.numpy.pi/4, wires=wire)
+                    qml.RZ(3*qml.numpy.pi/4, wires=dim_wire[wire])
+                    qml.RY(-qml.numpy.pi/4, wires=dim_wire[wire])
+                    qml.RZ(3*qml.numpy.pi/4, wires=dim_wire[wire])
+
 
 
 def styblinski_tang(x):
@@ -160,3 +137,37 @@ def styblinski_tang_hamiltonian(dim_wires, qubits_per_dim):
             coeffs.append(coeff)
 
     return qml.Hamiltonian(coeffs, obs)
+
+def qmoa_complete_ST_evolution_HS(device, depth, n_expvals, qubits_per_dim):
+
+    qubits_per_dim = int(qubits_per_dim)
+    wires = device.wires
+    qubits = len(wires)
+
+    if qubits % qubits_per_dim != 0:
+        return None
+
+    dim = int(qubits/qubits_per_dim)
+
+    graph = nx.complete_graph(2**qubits_per_dim)
+
+    dim_wires = np.split(np.array(range(qubits_per_dim*dim)), dim)
+    base_mixer = qmoa_pauli_string(nx.to_numpy_array(graph), range(qubits_per_dim), base_mixer="compelte")
+
+    qualities = styblinski_tang_hamiltonian(dim_wires, qubits_per_dim)
+
+    @qml.qnode(device)
+    def circuit(gammas, ts):
+        for wire in range(qubits):
+            qml.Hadamard(wires=wire)
+        for gamma, t in zip(gammas, ts):
+            phase_shift(gamma, wires, qualities)
+            qmoa_hamiltonian_evolution(t, dim_wires, base_mixer)
+        return qml.expval(qualities)
+
+    start = time()
+    for _ in range(n_expvals):
+        gammas = np.random.uniform(0, 2*np.pi, depth) if depth > 1 else [np.random.uniform(0, 2*np.pi)]
+        ts = np.split(np.random.uniform(0, 2*np.pi, dim*depth),depth)
+        expval = circuit(gammas, ts)
+    return float(np.mean(expval)), time() - start
