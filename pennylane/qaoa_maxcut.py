@@ -54,8 +54,6 @@ def qaoa_hypercube_maxcut_evolution(device, depth, n_expvals):
 
     qubits = len(device.wires)
 
-    gammas_ts = qml.numpy.random.uniform(size = 2*depth, low = 0, high = 2*qml.numpy.pi)
-
     G = nx.erdos_renyi_graph(qubits, p=0.05, seed=42, directed=False)
 
     wires = range(qubits)
@@ -63,7 +61,7 @@ def qaoa_hypercube_maxcut_evolution(device, depth, n_expvals):
     qualities_H = maxcut_qualities(G, wires)
 
     @qml.qnode(device)
-    def circuit():
+    def circuit(gammas_ts):
         for wire in wires:
             qml.Hadamard(wires=wire)
         for gamma, t in zip(*qml.numpy.split(gammas_ts, 2)):
@@ -72,15 +70,15 @@ def qaoa_hypercube_maxcut_evolution(device, depth, n_expvals):
         return qml.expval(qualities_H)
 
     start = time()
+    qml.numpy.random.seed(42)
+    gammas_ts = qml.numpy.random.uniform(size = 2*depth, low = 0, high = 2*qml.numpy.pi)
     for _ in range(n_expvals):
-        expval = circuit()
+        expval = circuit(gammas_ts)
     return float(expval), time() - start
 
 def qaoa_complete_maxcut_evolution(device, depth, n_expvals):
 
     qubits = len(device.wires)
-
-    gammas_ts = qml.numpy.random.uniform(size = 2*depth, low = 0, high = 2*qml.numpy.pi)
 
     G = nx.erdos_renyi_graph(qubits, p=0.05, seed=42, directed=False)
 
@@ -92,7 +90,7 @@ def qaoa_complete_maxcut_evolution(device, depth, n_expvals):
         complete_eigenvalues(2**qubits))
 
     @qml.qnode(device)
-    def circuit():
+    def circuit(gammas_ts):
         for wire in wires:
             qml.Hadamard(wires=wire)
         for gamma, t in zip(*qml.numpy.split(gammas_ts, 2)):
@@ -101,6 +99,8 @@ def qaoa_complete_maxcut_evolution(device, depth, n_expvals):
         return qml.expval(qualities_H)
 
     start = time()
+    qml.numpy.random.seed(42)
+    gammas_ts = qml.numpy.random.uniform(size = 2*depth, low = 0, high = 2*qml.numpy.pi)
     for _ in range(n_expvals):
-        expval = circuit()
+        expval = circuit(gammas_ts)
     return float(expval), time() - start
