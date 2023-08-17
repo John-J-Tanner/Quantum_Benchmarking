@@ -7,7 +7,7 @@ from toolkit import *
 from functools import reduce
 from operator import matmul
 import networkx as nx
-from unitaries import diagonal_pauli_decompose, phase_shift
+from unitaries import diagonal_pauli_decompose, phase_shift, complete_eigenvalues
 
 from scipy.sparse import csr_matrix as csr
 
@@ -166,8 +166,52 @@ def qmoa_complete_ST_evolution_HS(device, depth, n_expvals, qubits_per_dim):
         return qml.expval(qualities)
 
     start = time()
+    np.random.seed(42)
     for _ in range(n_expvals):
         gammas = np.random.uniform(0, 2*np.pi, depth) if depth > 1 else [np.random.uniform(0, 2*np.pi)]
         ts = np.split(np.random.uniform(0, 2*np.pi, dim*depth),depth)
         expval = circuit(gammas, ts)
     return float(np.mean(expval)), time() - start
+
+def qmoa_complete_ST_evolution_QFT(device, depth, n_expvals, qubits_per_dim):
+
+    qubits_per_dim = int(qubits_per_dim)
+    wires = device.wires
+    qubits = len(wires)
+
+    if qubits % qubits_per_dim != 0:
+        return None
+
+    dim = int(qubits/qubits_per_dim)
+
+    graph = nx.complete_graph(2**qubits_per_dim)
+
+    dim_wires = np.split(np.array(range(qubits_per_dim*dim)), dim)
+    base_mixer = qmoa_pauli_string(nx.to_numpy_array(graph), range(qubits_per_dim), base_mixer="compelte")
+
+    qualities = styblinski_tang_hamiltonian(dim_wires, qubits_per_dim)
+
+    eigen_decomp = diagonal_pauli_decompose(
+        complete_eigenvalues(2**qubits_per_dim))
+
+    @qml.qnode(device)
+    def circuit(gammas, ts):
+        for wire in wires:
+            qml.Hadamard(wires=wire)
+        for gamma, t in zip(gammas, ts):
+            phase_shift(gamma, wires, qualities)
+            for dim_wire in dim_wires:
+                qml.QFT(wires = dim_wire)
+            qmoa_hamiltonian_evolution(ts, dim_wires, eigen_decomp)
+            for dim_wire in dim_wires:
+                qml.adjoint(qml.QFT)(wires=dim_wire)
+        return qml.expval(qualities)
+
+    start = time()
+    np.random.seed(42)
+    for _ in range(n_expvals):
+        gammas = np.random.uniform(0, 2*np.pi, depth) if depth > 1 else [np.random.uniform(0, 2*np.pi)]
+        ts = np.split(np.random.uniform(0, 2*np.pi, dim*depth),depth)
+        expval = circuit(gammas, ts)
+    return float(np.mean(expval)), time() - start
+
