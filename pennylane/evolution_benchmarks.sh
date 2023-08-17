@@ -2,14 +2,13 @@ backends="$1"
 output_dir="$2"
 
 benchmark_time_limit=3600
-n_repeats=1
-ansatze=(qmoa_complete_ST_evolution_HS qaoa_complete_maxcut_evolution qaoa_hypercube_maxcut_evolution )
-ansatz_args=(4 "" "")
-ansatz_modules=(qmoa_styblinski_tang qaoa_maxcut qaoa_maxcut)
+n_repeats=3
+ansatze=(qmoa_complete_ST_evolution_QFT qmoa_complete_ST_evolution_HS qaoa_complete_maxcut_evolution qaoa_hypercube_maxcut_evolution )
+ansatz_args=(4 4 "" "")
+ansatz_modules=(qmoa_styblinski_tang qmoa_styblinski_tang qaoa_maxcut qaoa_maxcut)
 depths=(1 2 4 8 16 32 64)
 qubits_min=4
 qubits_max=30
-
 n_expval=100
 
 echo Output directory: $output_dir
@@ -31,7 +30,7 @@ do
 				do
 					echo Running repeat $repeat with $backend backend for $ansatz evolution with $qubits qubits at $depth depth...
 					start=$EPOCHREALTIME
-					output=$(python3 evolution_benchmark.py $backend ${ansatz_modules[$ansatz_index]} $ansatz $qubits $depth $n_expval ${ansatz_args[$ansatz_index]})
+					output=$(python3.9 evolution_benchmark.py $backend ${ansatz_modules[$ansatz_index]} $ansatz $qubits $depth $n_expval ${ansatz_args[$ansatz_index]})
 					end=$EPOCHREALTIME
 					n_outvals=$(echo $output | grep -o ',' | wc -l)
 					if [[ $n_outvals -eq 2 ]]
