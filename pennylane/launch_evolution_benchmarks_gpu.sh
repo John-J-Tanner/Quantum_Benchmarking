@@ -1,2 +1,2 @@
-bash bench.sh "lightning.gpu" results_gpu
+bash evolution_benchmarks.sh "lightning.gpu" results_gpu
 
