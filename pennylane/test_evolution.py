@@ -51,6 +51,59 @@ class test_mixers(unittest.TestCase):
 
         return np.testing.assert_allclose(circuit(), state)
 
+    def test_qmoa_styblinski_tang_evolution_qft(self):
+
+        qubits = 6
+        dim = 3
+        qubits_per_dim = qubits // dim
+        n_grid_points = 2**qubits_per_dim
+
+        ts = np.random.uniform(size=3)
+        gamma = np.random.uniform()
+
+        # Evolution using NumPy and SciPy.
+        graph = nx.complete_graph(2**qubits_per_dim)
+        array = nx.to_numpy_array(graph)
+        mixer = (
+            ts[0] * np.kron(array, np.identity(2**(2*qubits_per_dim)))
+            + ts[1]
+            * np.kron(np.identity(2**qubits_per_dim), np.kron(array, np.identity(2**qubits_per_dim)))
+            + ts[2] * np.kron(np.identity(2**(2*qubits_per_dim)), array)
+        )
+
+        qualities = np.array([styblinski_tang([-5 + i*10/n_grid_points, -5 + j*10/n_grid_points, -5 + k*10/n_grid_points])
+                             for i in range(n_grid_points) for j in range(n_grid_points) for k in range(n_grid_points)])
+
+        # Compute the state.
+        final_state = expm(-1j * mixer) @ (np.exp(-1j * gamma *
+                                                  qualities) * np.ones(2**qubits)/np.sqrt(2**qubits))
+
+        # Evolution using PennyLane.
+        dev = qml.device("default.qubit", wires=qubits)
+        wires = range(qubits)
+
+        dim_wires = np.split(np.array(range(qubits_per_dim*dim)), dim)
+
+        h = styblinski_tang_hamiltonian(dim_wires, qubits_per_dim)
+
+        eigen_decomp = diagonal_pauli_decompose(
+            complete_eigenvalues(n_grid_points))
+
+        @qml.qnode(dev)
+        def circuit():
+            for wire in wires:
+                qml.Hadamard(wires=wire)
+            phase_shift(gamma, wires, h)
+            for dim_wire in dim_wires:
+                qml.QFT(wires = dim_wire)
+            qmoa_hamiltonian_evolution(ts, dim_wires, eigen_decomp)
+            for dim_wire in dim_wires:
+                qml.adjoint(qml.QFT)(wires=dim_wire)
+            return qml.probs()
+
+        return np.testing.assert_allclose(circuit(), np.abs(final_state)**2)
+
+
     def test_qmoa_styblinski_tang_evolution(self):
 
         qubits = 6
