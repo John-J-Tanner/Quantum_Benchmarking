@@ -1,5 +1,10 @@
-Variational algorithm simulation using Pennylane.
+Benchmarks for Pennylane simulation backends that consider the state-evolution of the following variational algorithms:
 
-At the moment it implements a few general unitaries and simulation of the QAOA.
+* QAOA with a hypercube graph mixer (quantum Hamiltonian simulation).
+* QAOA with a complete graph mixer (quantum Fourier Transform).
+* QMOA with complete graph mixers (quantum Hamiltonian simulation).
+* QMOA with complete graph mixers (quantum Fourier simulation).
 
-'toolkit' is a collection of convenience functions taken from QuOp_MPI.
+To launch benchmarks for the default CPU-only backends:
+
+    bash launch_evolution_benchmarks_cpu.sh
