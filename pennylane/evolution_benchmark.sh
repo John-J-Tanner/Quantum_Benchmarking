@@ -7,7 +7,7 @@ ansatze=(qmoa_complete_ST_evolution_HS qaoa_complete_maxcut_evolution qaoa_hyper
 ansatz_args=(4 "" "")
 ansatz_modules=(qmoa_styblinski_tang qaoa_maxcut qaoa_maxcut)
 depths=(1 2 4 8 16 32 64)
-qubits_min=5
+qubits_min=4
 qubits_max=30
 
 n_expval=100
