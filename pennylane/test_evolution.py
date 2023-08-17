@@ -6,7 +6,7 @@ from scipy.linalg import expm as dense_expm
 from unitaries import hypercube_mixer, phase_shift, diagonal_pauli_decompose, circulant_mixer_2, complete_eigenvalues
 import pennylane as qml
 from qaoa_maxcut import maxcut_qualities
-from qmoa_styblinski_tang import styblinski_tang, qmoa_hamiltonian_evolution, qmoa_hamiltonians, styblinski_tang_hamiltonian
+from qmoa_styblinski_tang import styblinski_tang, qmoa_hamiltonian_evolution, qmoa_pauli_string, styblinski_tang_hamiltonian
 
 
 class test_mixers(unittest.TestCase):
@@ -82,8 +82,10 @@ class test_mixers(unittest.TestCase):
         dev = qml.device("default.qubit", wires=qubits)
         wires = range(qubits)
 
-        dim_wires, H = qmoa_hamiltonians(
-            graph, dim, wires, base_mixer='complete')
+        dim_wires = np.split(np.array(range(qubits_per_dim*dim)), dim)
+        base_mixer = qmoa_pauli_string(nx.to_numpy_array(graph), range(qubits_per_dim), base_mixer="compelte")
+
+
         h = styblinski_tang_hamiltonian(dim_wires, qubits_per_dim)
 
         @qml.qnode(dev)
@@ -91,7 +93,7 @@ class test_mixers(unittest.TestCase):
             for wire in range(qubits):
                 qml.Hadamard(wires=wire)
             phase_shift(gamma, wires, h)
-            qmoa_hamiltonian_evolution(ts, dim_wires, H)
+            qmoa_hamiltonian_evolution(ts, dim_wires, base_mixer)
             return qml.probs()
 
         return np.testing.assert_allclose(circuit(), np.abs(final_state)**2)
