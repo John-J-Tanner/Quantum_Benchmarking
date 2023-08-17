@@ -1,3 +1,30 @@
+"""Import and execute a state-evolution benchmark function for a quantum 
+variational algorithm.
+
+Command-line arguments:
+
+    1. Pennylane backend, e.g. default.qubit, lightning.gpu.
+    2. Module containing the state-evolution benchmark function.
+    3. Name of the state-evolution benchmark function.
+    4. Number of simulated qubits.
+    5. Number of ansatz iterations.
+    6. Number of expectation value computations to time over. 
+    7+. Whitespace-delimited arguments to be passed as strings to the 
+    state-evolution benchmark function.
+
+If the output of the state-evolution benchmark function is not None, this 
+program prints:
+
+    -   The last computed expectation value.
+    -   In-program time (seconds) taken to run the state-evolution benchmark 
+        function.
+    -   In-program time (seconds) taken to perform all requested evaluations 
+        of the expectation value.
+
+Nothing is printed if the state-evolution benchmark function returns None. 
+This may occur if the function is called with an incompatible number of qubits.
+
+"""
 import sys
 import importlib
 from time import time
@@ -21,4 +48,4 @@ result = ansatz(dev, depth, n_expvals, *ansatz_args)
 end = time()
 
 if result is not None:
-    print(f'{result[0]},{end - start},{result[1]}')
+    print(f"{result[0]},{end - start},{result[1]}")
