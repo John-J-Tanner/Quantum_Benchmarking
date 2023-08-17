@@ -1,7 +1,8 @@
+from time import time
 import pennylane as qml
 from scipy.optimize import minimize
 import networkx as nx
-from unitaries import hypercube_mixer, phase_shift
+from unitaries import hypercube_mixer, phase_shift, circulant_mixer_2, diagonal_pauli_decompose, complete_eigenvalues
 
 
 def maxcut_qualities(G, wires):
@@ -49,18 +50,57 @@ def qaoa(wires, depth, qualities, ansatz):
 
     return result
 
+def qaoa_hypercube_maxcut_evolution(device, depth, n_expvals):
 
-if __name__ == "__main__":
-    qml.numpy.random.seed(1)
-    n_wires = 11
-    dev = qml.device("default.qubit", wires=n_wires)
-    wires = range(n_wires)
+    qubits = len(device.wires)
 
-    G = nx.erdos_renyi_graph(n_wires, p=0.5, seed=42, directed=False)
-    qualities = maxcut_qualities(G, wires)
+    gammas_ts = qml.numpy.random.uniform(size = 2*depth, low = 0, high = 2*qml.numpy.pi)
 
-    ansatz = qml.qnode(dev)(ansatz)
+    G = nx.erdos_renyi_graph(qubits, p=0.05, seed=42, directed=False)
 
-    depth = 1
+    wires = range(qubits)
+    dev = qml.device("default.qubit", wires=qubits)
+    qualities_H = maxcut_qualities(G, wires)
 
-    qaoa(wires, depth, qualities, ansatz)
+    @qml.qnode(device)
+    def circuit():
+        for wire in wires:
+            qml.Hadamard(wires=wire)
+        for gamma, t in zip(*qml.numpy.split(gammas_ts, 2)):
+            phase_shift(gamma, wires, qualities_H)
+            hypercube_mixer(t, wires)
+        return qml.expval(qualities_H)
+
+    start = time()
+    for _ in range(n_expvals):
+        expval = circuit()
+    return float(expval), time() - start
+
+def qaoa_complete_maxcut_evolution(device, depth, n_expvals):
+
+    qubits = len(device.wires)
+
+    gammas_ts = qml.numpy.random.uniform(size = 2*depth, low = 0, high = 2*qml.numpy.pi)
+
+    G = nx.erdos_renyi_graph(qubits, p=0.05, seed=42, directed=False)
+
+    wires = range(qubits)
+    dev = qml.device("default.qubit", wires=qubits)
+    qualities_H = maxcut_qualities(G, wires)
+
+    eigen_decomp = diagonal_pauli_decompose(
+        complete_eigenvalues(2**qubits))
+
+    @qml.qnode(device)
+    def circuit():
+        for wire in wires:
+            qml.Hadamard(wires=wire)
+        for gamma, t in zip(*qml.numpy.split(gammas_ts, 2)):
+            phase_shift(gamma, wires, qualities_H)
+            circulant_mixer_2(t, wires, eigen_decomp)
+        return qml.expval(qualities_H)
+
+    start = time()
+    for _ in range(n_expvals):
+        expval = circuit()
+    return float(expval), time() - start
