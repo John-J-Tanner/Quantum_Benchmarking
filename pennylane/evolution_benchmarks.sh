@@ -1,10 +1,10 @@
 # Whitespace delimited list of Pennylane backends, e.g. "default.qubit lightning.qubit".
 backends="$1"
 # Directory in which to output benchmark results.
-output_dir="$2"
+results_rootdir="$2"
 
 # Time-limit (seconds) applied to each combination of state-evolution benchmark function + simulation backend.
-benchmark_time_limit=3600
+benchmark_time_limit=120
 # Number of repeats.
 n_repeats=3
 # Modules containing state evolution benchmark functions.
@@ -22,14 +22,19 @@ qubits_max=30
 # The total number of state propagations is depth*n_expval.
 n_expval=100
 
-echo Output directory: $output_dir
-mkdir -p $output_dir
+# The results for a run of the evolution_benchmarks.sh script are saved to a unique subfolder in the results_rootdir.
+
+benchmark_set_ID=$EPOCHSECONDS
+output_dir="$results_rootdir"/$benchmark_set_ID
+mkdir -p "$output_dir"
+echo Output directory: "$output_dir"
 
 for backend in ${backends[@]}; do
+	# End the benchmark for backend if EPOCHSECONDS - bench_start > benchmark_time_limit.
 	bench_start=$EPOCHSECONDS
 	ansatz_index=0
 	for ansatz in ${ansatze[@]}; do
-		output_name=$output_dir/$(echo $backend | tr . _)_${ansatz}_$EPOCHSECONDS.csv
+		output_name=$output_dir/$(echo $backend | tr . _)_${ansatz}.csv
 		# A different output file is used for each combination of backend and algorithm ansatz.
 		#
 		# Header for results file:
@@ -49,25 +54,37 @@ for backend in ${backends[@]}; do
 		for qubits in $(seq $qubits_min $qubits_max); do
 			for depth in ${depths[@]}; do
 				for repeat in $(seq 1 $n_repeats); do
-					echo Running repeat $repeat with $backend backend for $ansatz evolution with $qubits qubits at $depth depth...
+
+					time_remaining=$(bc <<< "scale=1;100 - 100*($EPOCHSECONDS - $bench_start)/$benchmark_time_limit")
+					echo "(Benchmark time remaining: $time_remaining%)": Running repeat $repeat with $backend backend for $ansatz evolution with $qubits qubits at depth $depth.
+
 					start=$EPOCHREALTIME
-					output=$(python3 evolution_benchmark.py $backend ${ansatz_modules[$ansatz_index]} $ansatz $qubits $depth $n_expval ${ansatz_args[$ansatz_index]})
+					output=$(python3.9 evolution_benchmark.py $backend ${ansatz_modules[$ansatz_index]} $ansatz $qubits $depth $n_expval ${ansatz_args[$ansatz_index]})
 					end=$EPOCHREALTIME
-					# If the output isn't a comma delimited list with three values, don't record the result and
-					# move on to the next ansatz depth. This assumes that the simulation can't be performed with
-					# the requested number of qubits.
-					n_outvals=$(echo $output | grep -o ',' | wc -l)
-					if [[ $n_outvals -eq 2 ]]; then
-						echo $repeat,$ansatz,$backend,$qubits,$depth,$n_expval,$output,$(bc <<<"$end - $start") >>$output_name
-						echo Done.
-					else
-						echo Skipping tests for $qubits qubits.
-						break 2
-					fi
+
+					status=$(echo "$output" | cut -d, -f 1)	
+					results=$(echo "$output" | cut -d, -f 2- )	
+
+					case $status in
+						success)
+							echo $repeat,$ansatz,$backend,$qubits,$depth,$n_expval,$results,$(bc <<<"$end - $start") >>$output_name
+							;;
+						pass)
+							echo "Skipping tests for $qubits qubits."
+							break 2
+							;;
+						*)
+						 	echo "Test at $depth depth with $qubits qubits failed, concluding tests for $ansatz with $backend backend."
+							break 3
+							;;
+					esac
+
 					# If the benchmark time limit has been exceeded, move on to the next ansatz.
 					if [[ $(($EPOCHSECONDS - $bench_start)) -gt $benchmark_time_limit ]]; then
+					 	echo "Benchmark time limit exceeded, moving to next ansatz."
 						break 3
 					fi
+
 				done
 			done
 		done
