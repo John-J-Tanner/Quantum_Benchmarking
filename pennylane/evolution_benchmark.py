@@ -21,7 +21,7 @@ program prints:
     -   In-program time (seconds) taken to perform all requested evaluations 
         of the expectation value.
 
-Nothing is printed if the state-evolution benchmark function returns None. 
+If the state-evolution benchmark function returns None the program prints "pass".
 This may occur if the function is called with an incompatible number of qubits.
 
 """
