@@ -24,14 +24,14 @@ n_expval=100
 
 # The results for a run of the evolution_benchmarks.sh script are saved to a unique subfolder in the results_rootdir.
 
-benchmark_set_ID=$EPOCHSECONDS
+benchmark_set_ID=$(date +%s)
 output_dir="$results_rootdir"/$benchmark_set_ID
 mkdir -p "$output_dir"
 echo Output directory: "$output_dir"
 
 for backend in ${backends[@]}; do
 	# End the benchmark for backend if EPOCHSECONDS - bench_start > benchmark_time_limit.
-	bench_start=$EPOCHSECONDS
+	bench_start=$(date +%s)
 	ansatz_index=0
 	for ansatz in ${ansatze[@]}; do
 		output_name=$output_dir/$(echo $backend | tr . _)_${ansatz}.csv
@@ -58,7 +58,7 @@ for backend in ${backends[@]}; do
 					time_remaining=$(bc <<< "scale=1;100 - 100*($EPOCHSECONDS - $bench_start)/$benchmark_time_limit")
 					echo "(Benchmark time remaining: $time_remaining%)": Running repeat $repeat with $backend backend for $ansatz evolution with $qubits qubits at depth $depth.
 
-					start=$EPOCHREALTIME
+					start=$(date +%s.%N)
 					output=$(python3 evolution_benchmark.py $backend ${ansatz_modules[$ansatz_index]} $ansatz $qubits $depth $n_expval ${ansatz_args[$ansatz_index]})
 					end=$EPOCHREALTIME
 
@@ -80,7 +80,7 @@ for backend in ${backends[@]}; do
 					esac
 
 					# If the benchmark time limit has been exceeded, move on to the next ansatz.
-					if [[ $(($EPOCHSECONDS - $bench_start)) -gt $benchmark_time_limit ]]; then
+					if [[ $(( $(date +%s) - $bench_start)) -gt $benchmark_time_limit ]]; then
 					 	echo "Benchmark time limit exceeded, moving to next ansatz."
 						break 3
 					fi
