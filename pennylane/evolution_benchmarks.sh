@@ -30,7 +30,7 @@ mkdir -p "$output_dir"
 echo Output directory: "$output_dir"
 
 for backend in ${backends[@]}; do
-	# End the benchmark for backend if EPOCHSECONDS - bench_start > benchmark_time_limit.
+	# End the benchmark for backend if $(date +%s) - $bench_start > $benchmark_time_limit.
 	bench_start=$(date +%s)
 	ansatz_index=0
 	for ansatz in ${ansatze[@]}; do
@@ -50,24 +50,33 @@ for backend in ${backends[@]}; do
 		#	circuit_time:	in-program time (seconds) taken to carry out the state evolutions (excludes setup steps)
 		#	wall_time:		program wall time
 		#
-		echo repeat,ansatz,backend,qubits,depth,n_expval,last_expval,func_time,circuit_time,wall_time >$output_name
+		echo repeat,ansatz,backend,qubits,depth,n_expval,last_expval,func_time,circuit_time,wall_time,n_nodes,n_cpus,n_gpus >$output_name
 		for qubits in $(seq $qubits_min $qubits_max); do
 			for depth in ${depths[@]}; do
 				for repeat in $(seq 1 $n_repeats); do
 
-					time_remaining=$(bc <<< "scale=1;100 - 100*($EPOCHSECONDS - $bench_start)/$benchmark_time_limit")
+					time_remaining=$(bc <<< "scale=1;100 - 100*($(date +%s.%N)- $bench_start)/$benchmark_time_limit")
 					echo "(Benchmark time remaining: $time_remaining%)": Running repeat $repeat with $backend backend for $ansatz evolution with $qubits qubits at depth $depth.
 
 					start=$(date +%s.%N)
-					output=$(python3 evolution_benchmark.py $backend ${ansatz_modules[$ansatz_index]} $ansatz $qubits $depth $n_expval ${ansatz_args[$ansatz_index]})
-					end=$EPOCHREALTIME
+					case $SLURM_GPUS in
+						1)	
+						output=$(srun -N $SLURM_NNODES -n $SLURM_NTASKS -c $SLURM_CPUS_PER_TASK --gpus=$SLURM_GPUS python evolution_benchmark.py $backend ${ansatz_modules[$ansatz_index]} $ansatz $qubits $depth $n_expval ${ansatz_args[$ansatz_index]})
+						N_GPUS=$SLURM_GPUS
+						;;
+						*)
+						output=$(srun -N $SLURM_NNODES -n $SLURM_NTASKS -c $SLURM_CPUS_PER_TASK python evolution_benchmark.py $backend ${ansatz_modules[$ansatz_index]} $ansatz $qubits $depth $n_expval ${ansatz_args[$ansatz_index]})
+						N_GPUS=1
+						;;
+					esac
+					end=$(date +%s.%N)
 
 					status=$(echo "$output" | cut -d, -f 1)	
 					results=$(echo "$output" | cut -d, -f 2- )	
 
 					case $status in
 						success)
-							echo $repeat,$ansatz,$backend,$qubits,$depth,$n_expval,$results,$(bc <<<"$end - $start") >>$output_name
+							echo $repeat,$ansatz,$backend,$qubits,$depth,$n_expval,$results,$(bc <<<"$end - $start"),$SLURM_NNODES,$SLURM_CPUS_PER_TASK,$N_GPUS >>$output_name
 							;;
 						pass)
 							echo "Skipping tests for $qubits qubits."
