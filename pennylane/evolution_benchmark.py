@@ -48,4 +48,6 @@ result = ansatz(dev, depth, n_expvals, *ansatz_args)
 end = time()
 
 if result is not None:
-    print(f"{result[0]},{end - start},{result[1]}")
+    print(f"success,{result[0]},{end - start},{result[1]}", flush = True)
+else:
+    print("pass", flush = True)
