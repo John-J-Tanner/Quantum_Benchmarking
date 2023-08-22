@@ -213,8 +213,8 @@ def qmoa_complete_ST_evolution_HS(device, depth, n_expvals, qubits_per_dim):
     """
 
     qubits_per_dim = int(qubits_per_dim)
-    wires = device.wires
-    qubits = len(wires)
+    qubits = len(device.wires)
+    wires = [i for i in range(qubits)]
 
     if qubits % qubits_per_dim != 0:
         return None
@@ -223,7 +223,8 @@ def qmoa_complete_ST_evolution_HS(device, depth, n_expvals, qubits_per_dim):
 
     graph = nx.complete_graph(2**qubits_per_dim)
 
-    dim_wires = np.split(np.array(range(qubits_per_dim * dim)), dim)
+    dim_wires = [wires[i:i + qubits_per_dim] for i in range(0, len(wires), qubits_per_dim)]
+
     base_mixer = matrix_to_pauli_string(
         nx.to_numpy_array(graph), range(qubits_per_dim), base_mixer="compelte"
     )
@@ -279,17 +280,15 @@ def qmoa_complete_ST_evolution_QFT(device, depth, n_expvals, qubits_per_dim):
     """
 
     qubits_per_dim = int(qubits_per_dim)
-    wires = device.wires
-    qubits = len(wires)
+    qubits = len(device.wires)
+    wires = [i for i in range(qubits)]
 
     if qubits % qubits_per_dim != 0:
         return None
 
     dim = int(qubits / qubits_per_dim)
 
-    graph = nx.complete_graph(2**qubits_per_dim)
-
-    dim_wires = np.split(np.array(range(qubits_per_dim * dim)), dim)
+    dim_wires = [wires[i:i + qubits_per_dim] for i in range(0, len(wires), qubits_per_dim)]
 
     qualities = styblinski_tang_hamiltonian(dim_wires, qubits_per_dim)
 
@@ -303,10 +302,11 @@ def qmoa_complete_ST_evolution_QFT(device, depth, n_expvals, qubits_per_dim):
             phase_shift(gamma, wires, qualities)
             for dim_wire in dim_wires:
                 qml.QFT(wires=dim_wire)
-            qmoa_hamiltonian_evolution(ts, dim_wires, eigen_decomp)
+            qmoa_hamiltonian_evolution(t, dim_wires, eigen_decomp)
             for dim_wire in dim_wires:
                 qml.adjoint(qml.QFT)(wires=dim_wire)
         return qml.expval(qualities)
+
 
     start = time()
     np.random.seed(42)
