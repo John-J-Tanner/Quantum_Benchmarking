@@ -30,11 +30,8 @@ mkdir -p "$output_dir"
 echo Output directory: "$output_dir"
 
 for backend in ${backends[@]}; do
-<<<<<<< HEAD
-=======
 	# End the benchmark for backend if $(date +%s) - $bench_start > $benchmark_time_limit.
 	bench_start=$(date +%s)
->>>>>>> 15464fe69c3d5e2e47825fad8caaf19c19203e5d
 	ansatz_index=0
 	for ansatz in ${ansatze[@]}; do
 		# End the benchmark for a backend + ansatz if EPOCHSECONDS - bench_start > benchmark_time_limit.
@@ -64,11 +61,6 @@ for backend in ${backends[@]}; do
 					time_remaining=$(bc <<< "scale=1;100 - 100*($(date +%s.%N)- $bench_start)/$benchmark_time_limit")
 					echo "(Benchmark time remaining: $time_remaining%)": Running repeat $repeat with $backend backend for $ansatz evolution with $qubits qubits at depth $depth.
 
-<<<<<<< HEAD
-					start=$EPOCHREALTIME
-					output=$(python3.9 evolution_benchmark.py $backend ${ansatz_modules[$ansatz_index]} $ansatz $qubits $depth $n_expval ${ansatz_args[$ansatz_index]})
-					end=$EPOCHREALTIME
-=======
 					start=$(date +%s.%N)
 					case $SLURM_GPUS in
 						1)	
@@ -81,7 +73,6 @@ for backend in ${backends[@]}; do
 						;;
 					esac
 					end=$(date +%s.%N)
->>>>>>> 15464fe69c3d5e2e47825fad8caaf19c19203e5d
 
 					status=$(echo "$output" | cut -d, -f 1)	
 					results=$(echo "$output" | cut -d, -f 2- )	
