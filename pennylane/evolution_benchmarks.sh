@@ -4,7 +4,7 @@ backends="$1"
 results_rootdir="$2"
 
 # Time-limit (seconds) applied to each combination of state-evolution benchmark function + simulation backend.
-benchmark_time_limit=3600
+benchmark_time_limit=$(( 60 * 5 ))
 # Number of repeats.
 n_repeats=3
 # Modules containing state evolution benchmark functions.
@@ -30,10 +30,11 @@ mkdir -p "$output_dir"
 echo Output directory: "$output_dir"
 
 for backend in ${backends[@]}; do
-	# End the benchmark for backend if EPOCHSECONDS - bench_start > benchmark_time_limit.
-	bench_start=$EPOCHSECONDS
 	ansatz_index=0
 	for ansatz in ${ansatze[@]}; do
+		# End the benchmark for a backend + ansatz if EPOCHSECONDS - bench_start > benchmark_time_limit.
+		bench_start=$EPOCHSECONDS
+
 		output_name=$output_dir/$(echo $backend | tr . _)_${ansatz}.csv
 		# A different output file is used for each combination of backend and algorithm ansatz.
 		#
@@ -59,7 +60,7 @@ for backend in ${backends[@]}; do
 					echo "(Benchmark time remaining: $time_remaining%)": Running repeat $repeat with $backend backend for $ansatz evolution with $qubits qubits at depth $depth.
 
 					start=$EPOCHREALTIME
-					output=$(python3 evolution_benchmark.py $backend ${ansatz_modules[$ansatz_index]} $ansatz $qubits $depth $n_expval ${ansatz_args[$ansatz_index]})
+					output=$(python3.9 evolution_benchmark.py $backend ${ansatz_modules[$ansatz_index]} $ansatz $qubits $depth $n_expval ${ansatz_args[$ansatz_index]})
 					end=$EPOCHREALTIME
 
 					status=$(echo "$output" | cut -d, -f 1)	
