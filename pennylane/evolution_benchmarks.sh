@@ -30,12 +30,10 @@ mkdir -p "$output_dir"
 echo Output directory: "$output_dir"
 
 for backend in ${backends[@]}; do
-	# End the benchmark for backend if $(date +%s) - $bench_start > $benchmark_time_limit.
-	bench_start=$(date +%s)
 	ansatz_index=0
 	for ansatz in ${ansatze[@]}; do
-		# End the benchmark for a backend + ansatz if EPOCHSECONDS - bench_start > benchmark_time_limit.
-		bench_start=$EPOCHSECONDS
+		# End the benchmark for backend if $(date +%s) - $bench_start > $benchmark_time_limit.
+		bench_start=$(date +%s)
 
 		output_name=$output_dir/$(echo $backend | tr . _)_${ansatz}.csv
 		# A different output file is used for each combination of backend and algorithm ansatz.
