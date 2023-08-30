@@ -186,7 +186,7 @@ def styblinski_tang_hamiltonian(dim_wires, qubits_per_dim):
     return qml.Hamiltonian(coeffs, obs)
 
 
-def qmoa_complete_ST_evolution_HS(device, depth, n_expvals, qubits_per_dim):
+def qmoa_complete_ST_evolution_HS(device, depth, n_expvals, seed, qubits_per_dim):
     """Compute the state-evolution of the QMOA unitary solving for the
     Styblinski-Tang function using Hamiltonian simulation.
 
@@ -241,19 +241,19 @@ def qmoa_complete_ST_evolution_HS(device, depth, n_expvals, qubits_per_dim):
         return qml.expval(qualities)
 
     start = time()
-    np.random.seed(42)
+    rng = np.random.default_rng(seed)
     for _ in range(n_expvals):
         gammas = (
-            np.random.uniform(0, 2 * np.pi, depth)
+            rng.uniform(0, 2 * np.pi, depth)
             if depth > 1
-            else [np.random.uniform(0, 2 * np.pi)]
+            else [rng.uniform(0, 2 * np.pi)]
         )
-        ts = np.split(np.random.uniform(0, 2 * np.pi, dim * depth), depth)
+        ts = np.split(rng.uniform(0, 2 * np.pi, dim * depth), depth)
         expval = circuit(gammas, ts)
     return float(np.mean(expval)), time() - start
 
 
-def qmoa_complete_ST_evolution_QFT(device, depth, n_expvals, qubits_per_dim):
+def qmoa_complete_ST_evolution_QFT(device, depth, n_expvals, seed, qubits_per_dim):
     """Compute the state-evolution of the QMOA unitary solving for the
     Styblinski-Tang function using the quantum Fourier transform.
 
@@ -309,13 +309,13 @@ def qmoa_complete_ST_evolution_QFT(device, depth, n_expvals, qubits_per_dim):
 
 
     start = time()
-    np.random.seed(42)
+    rng = np.random.default_rng(seed)
     for _ in range(n_expvals):
         gammas = (
-            np.random.uniform(0, 2 * np.pi, depth)
+            rng.uniform(0, 2 * np.pi, depth)
             if depth > 1
-            else [np.random.uniform(0, 2 * np.pi)]
+            else [rng.uniform(0, 2 * np.pi)]
         )
-        ts = np.split(np.random.uniform(0, 2 * np.pi, dim * depth), depth)
+        ts = np.split(rng.uniform(0, 2 * np.pi, dim * depth), depth)
         expval = circuit(gammas, ts)
     return float(np.mean(expval)), time() - start
