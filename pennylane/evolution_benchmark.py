@@ -9,7 +9,8 @@ Command-line arguments:
     4. Number of simulated qubits.
     5. Number of ansatz iterations.
     6. Number of expectation value computations to time over. 
-    7+. Whitespace-delimited arguments to be passed as strings to the 
+    7. Seed for random generation of the variational parameters. 
+    8+. Whitespace-delimited arguments to be passed as strings to the 
     state-evolution benchmark function.
 
 If the output of the state-evolution benchmark function is not None, this 
@@ -35,7 +36,8 @@ ansatz_module = sys.argv[2]
 ansatz_name = sys.argv[3]
 qubits = int(sys.argv[4])
 depth = int(sys.argv[5])
-n_expvals = int(sys.argv[6])
+seed = int(sys.argv[6])
+n_expvals = int(sys.argv[7])
 
 ansatz_args = []
 for i in range(7, len(sys.argv)):
@@ -44,7 +46,7 @@ for i in range(7, len(sys.argv)):
 dev = qml.device(backend_name, wires=qubits)
 ansatz = getattr(importlib.import_module(ansatz_module), ansatz_name)
 start = time()
-result = ansatz(dev, depth, n_expvals, *ansatz_args)
+result = ansatz(dev, depth, n_expvals, seed, *ansatz_args)
 end = time()
 
 if result is not None:
