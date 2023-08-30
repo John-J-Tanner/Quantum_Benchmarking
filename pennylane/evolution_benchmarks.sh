@@ -12,7 +12,7 @@ benchmark_time_limit=$4
 qubits_min=$5
 qubits_max=$6
 
-###################
+####################
 
 # Number of repeats.
 n_repeats=3
