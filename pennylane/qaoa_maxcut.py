@@ -72,7 +72,6 @@ def qaoa_hypercube_maxcut_evolution(device, depth, n_expvals, seed):
     G = gen_graph(qubits, seed)
 
     wires = range(qubits)
-    dev = qml.device("default.qubit", wires=qubits)
     qualities_H = maxcut_qualities(G, wires)
 
     @qml.qnode(device)
@@ -119,7 +118,6 @@ def qaoa_complete_maxcut_evolution(device, depth, n_expvals, seed):
     G = gen_graph(qubits, seed)
 
     wires = range(qubits)
-    dev = qml.device("default.qubit", wires=qubits)
     qualities_H = maxcut_qualities(G, wires)
 
     eigen_decomp = diagonal_pauli_decompose(complete_eigenvalues(2**qubits))
