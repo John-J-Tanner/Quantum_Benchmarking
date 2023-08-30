@@ -11,6 +11,18 @@ from unitaries import (
 )
 
 
+def gen_graph(qubits):
+    # for smaller graphs, increase the probability of edge generation
+    prob = 0.01 if 0.01 * (qubits**2) > 1 else 2.0/qubits**2
+    # ensure that there is at least one edge
+    n_edges = 0
+    while n_edges == 0:
+        G = nx.fast_gnp_random_graph(qubits, p=prob, seed=42, directed=False)
+        n_edges = G.number_of_edges()
+    return G
+    
+
+
 def maxcut_qualities(G, wires):
     """Return a Pauli-string representation of the maxcut cost-function.
 
@@ -57,7 +69,7 @@ def qaoa_hypercube_maxcut_evolution(device, depth, n_expvals):
 
     qubits = len(device.wires)
 
-    G = nx.erdos_renyi_graph(qubits, p=0.05, seed=42, directed=False)
+    G = gen_graph(qubits)
 
     wires = range(qubits)
     dev = qml.device("default.qubit", wires=qubits)
@@ -80,7 +92,7 @@ def qaoa_hypercube_maxcut_evolution(device, depth, n_expvals):
     return float(expval), time() - start
 
 
-def qaoa_complete_maxcut_evolution(device, depth, n_expvals):
+def qaoa_complete_maxcut_evolution(device, depth, n_expvals, seed):
     """State-evolution benchmark function for the QAOA with a complete-graph mixing operator.
 
     State evolution based on the QFT.
@@ -104,7 +116,7 @@ def qaoa_complete_maxcut_evolution(device, depth, n_expvals):
 
     qubits = len(device.wires)
 
-    G = nx.erdos_renyi_graph(qubits, p=0.05, seed=42, directed=False)
+    G = gen_graph(qubits)
 
     wires = range(qubits)
     dev = qml.device("default.qubit", wires=qubits)
