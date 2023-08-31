@@ -1,7 +1,7 @@
 #!/bin/bash --login
 ### INPUT ARGUMENTS
 echo "Parsed input arguments:"
-while getopts 'l:h:n:d:r:t:i:o:m:a:p:b:P:' opt; do
+while getopts 'l:h:n:r:t:i:o:m:a:p:b:P:' opt; do
 	case $opt in
 	l)
 		qubits_min=$OPTARG
@@ -14,10 +14,6 @@ while getopts 'l:h:n:d:r:t:i:o:m:a:p:b:P:' opt; do
 	n)
 		n_expval=$OPTARG
 		printf "\tCircuit evaluations: $n_expval\n"
-		;;
-	d)
-		depth=$OPTARG
-		printf "\tAnsatz iterations: $depth\n"
 		;;
 	r)
 		repeat_num=$OPTARG
@@ -106,56 +102,61 @@ printf "\nOutput path: $output_name\n"
 #	n_cpus:			number of CPUs per task (SLURM_CPUS_PER_TASK)
 #	n_gpus:			number of GPUS (SLURM_GPUS)
 #
+
 echo repeat,ansatz,backend,qubits,depth,n_expval,last_expval,func_time,circuit_time,wall_time,n_nodes,n_cpus,n_gpus >$output_name
 
 bench_start=$(date +%s)
 time_remaining=$benchmark_time_limit
+
+depths=(1 2 4 8 16 32)
+
 for qubits in $(seq $qubits_min $qubits_max); do
+	for depth in ${depths[@]}; do
+		launch_command="$python_executable evolution_benchmark.py $backend $ansatz_module $ansatz $qubits $depth $repeat_num $n_expval $ansatz_args"
 
-	launch_command="$python_executable evolution_benchmark.py $backend $ansatz_module $ansatz $qubits $depth $repeat_num $n_expval $ansatz_args"
+		time_percent_remaining=$(bc <<<"scale=1;100 - 100*($(date +%s.%N)- $bench_start)/$benchmark_time_limit")
+		echo "(Benchmark time remaining: $time_percent_remaining%)": Running repeat $repeat_num with $backend backend for $ansatz evolution with $qubits qubits at depth $depth.
 
-	time_percent_remaining=$(bc <<<"scale=1;100 - 100*($(date +%s.%N)- $bench_start)/$benchmark_time_limit")
-	echo "(Benchmark time remaining: $time_percent_remaining%)": Running repeat $repeat_num with $backend backend for $ansatz evolution with $qubits qubits at depth $depth.
+		start_time=$(date +%s.%N)
+		case $NNODES in
+		0)
+			output=$($launch_command)
+			;;
+		*)
+			if [ $NGPUS -gt 0 ]; then
+				output=$(srun -N $NNODES -n $NTASKS -c $CPUS_PER_TASK --gpus=$NGPUS $launch_command)
+			else
+				output=$(srun -N $NNODES -n $NTASKS -c $CPUS_PER_TASK $launch_command)
+			fi
+			;;
+		esac
+		end_time=$(date +%s.%N)
 
-	start_time=$(date +%s.%N)
-	case $NNODES in
-	0)
-		output=$($launch_command)
-		;;
-	*)
-		if [ $NGPUS -gt 0 ]; then
-			output=$(srun -N $NNODES -n $NTASKS -c $CPUS_PER_TASK --gpus=$NGPUS $launch_command)
-		else
-			output=$(srun -N $NNODES -n $NTASKS -c $CPUS_PER_TASK $launch_command)
+		status=$(echo "$output" | cut -d, -f 1)
+		results=$(echo "$output" | cut -d, -f 2-)
+
+		case $status in
+		success)
+			echo $repeat_num,$ansatz,$backend,$qubits,$depth,$n_expval,$results,$(bc <<<"$end_time - $start_time"),$NNODES,$CPUS_PER_TASK,$NGPUS >>$output_name
+			;;
+		pass)
+			echo "Skipping tests for $qubits qubits."
+			;;
+		*)
+			echo "Test at $depth depth with $qubits qubits failed, concluding tests for $ansatz with $backend backend."
+			break
+			;;
+		esac
+
+		time_remaining=$(bc <<<"$time_remaining - ($end_time - $start_time)")
+		time_test=$(bc <<<"($time_remaining - ($end_time - $start_time))/1")
+
+		if [ $time_test -le 0 ]; then
+			echo "Not enough time for next test, concluding tests for $ansatz with $backend backend."
+			printf "Suspended benchmark at:\n" >$output_dir/suspend.txt
+			printf "qubits:$qubits\ndepth:$depth\n" >$output_dir/suspend.txt
+			break
 		fi
-		;;
-	esac
-	end_time=$(date +%s.%N)
-
-	status=$(echo "$output" | cut -d, -f 1)
-	results=$(echo "$output" | cut -d, -f 2-)
-
-	case $status in
-	success)
-		echo $repeat_num,$ansatz,$backend,$qubits,$depth,$n_expval,$results,$(bc <<<"$end_time - $start_time"),$NNODES,$CPUS_PER_TASK,$NGPUS >>$output_name
-		;;
-	pass)
-		echo "Skipping tests for $qubits qubits."
-		;;
-	*)
-		echo "Test at $depth depth with $qubits qubits failed, concluding tests for $ansatz with $backend backend."
-		break
-		;;
-	esac
-
-	time_remaining=$(bc <<<"$time_remaining - ($end_time - $start_time)")
-	time_test=$(bc <<<"($time_remaining - ($end_time - $start_time))/1")
-
-	if [ $time_test -le 0 ]; then
-		echo "Not enough time for next test, concluding tests for $ansatz with $backend backend."
-		printf "Suspended benchmark at:\n" >$output_dir/suspend.txt
-		printf "qubits:$qubits\ndepth:$depth\n" >$output_dir/suspend.txt
-		break
-	fi
+	done
 
 done
