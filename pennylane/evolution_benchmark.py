@@ -40,7 +40,7 @@ seed = int(sys.argv[6])
 n_expvals = int(sys.argv[7])
 
 ansatz_args = []
-for i in range(7, len(sys.argv)):
+for i in range(8, len(sys.argv)):
     ansatz_args.append(sys.argv[i])
 
 dev = qml.device(backend_name, wires=qubits)
