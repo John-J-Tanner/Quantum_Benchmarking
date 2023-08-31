@@ -4,6 +4,7 @@ from toolkit import *
 from functools import reduce
 from operator import matmul
 import networkx as nx
+from scipy.sparse import issparse
 
 
 def bin_array(num, m):
@@ -95,9 +96,13 @@ def diagonal_pauli_decompose(diag):
     Hamiltonian
         pauli-string representation of a diagonal matrix operator
     """
-    diag = np.array(diag)
 
-    N = len(diag)
+    if issparse(diag): 
+        N = diag.shape[0]
+    else:
+        diag = np.array(diag)
+        N = len(diag)
+
     n = int(qml.numpy.log2(N))
 
     words = []
@@ -114,7 +119,11 @@ def diagonal_pauli_decompose(diag):
                 paulis.append(Z(0, 1))
 
         word = kron(paulis)
-        a = (1 / N) * qml.numpy.diag(diag.T @ word).sum()
+
+        if issparse(diag):
+            a = (1 / N) * (diag.T @ word).sum()
+        else:
+            a = (1 / N) * qml.numpy.diag(diag.T @ word).sum()
 
         if qml.numpy.abs(a) > 10 ** (-13):
             coeffs.append(a)
