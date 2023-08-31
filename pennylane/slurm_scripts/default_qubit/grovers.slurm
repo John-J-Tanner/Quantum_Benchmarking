@@ -1,23 +1,24 @@
 #!/bin/bash --login
- 
-# SLURM directives
-#
-# Here we specify to SLURM we want an OpenMP job with 32 threads
-# a wall-clock time limit of one hour.
-#
-# Replace [your-project] with the appropriate project name
-# following --account (e.g., --account=project123).
- 
-#SBATCH --account=[your-project]
+
+repeat=$1
+
+SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
+. $SCRIPT_DIR/../../defaults.sh 
+
+#SBATCH --account=pawsey0309
 #SBATCH --partition=work
 #SBATCH --ntasks=1
 #SBATCH --ntasks-per-node=1
-#SBATCH --cpus-per-task=32
-#SBATCH --mem=58880M      #Indicate the amount of memory per node when asking for share resources
-#SBATCH --time=01:00:00
- 
-# ---
-# Load here the needed modules
+#SBATCH --cpus-per-task=1
+#SBATCH --mem=$((8000 * 1))M
+#SBATCH --time=00:02:00
+#SBATCH --output=$BENCHMARK_OUTPUT/default_qubit_${repeat}.out
+#SBATCH --qos=high
+
+module load gcc
+module load python/3.9.15
+
+. venv/cpu/bin/activate
  
 # ---
 # OpenMP settings
@@ -28,5 +29,5 @@ export OMP_PROC_BIND=close  #To bind (fix) threads (allocating them as close as 
 # ---
 # Temporal workaround for avoiding Slingshot issues on shared nodes:
 export FI_CXI_DEFAULT_VNI=$(od -vAn -N4 -tu < /dev/urandom)
-# Run the desired code:
-srun -N $SLURM_JOB_NUM_NODES -n $SLURM_NTASKS -c $OMP_NUM_THREADS -m block:block:block ./code_omp.x
+
+bash evolution_benchmarks.sh -q 2 -h 28 -n 100 -r $repeat -t $(( 2 * 60 )) -i 31-08-2023 -o $BENCHMARK_ROOT/results -m grovers_search -a grovers_search -b default.qubit -P python &
