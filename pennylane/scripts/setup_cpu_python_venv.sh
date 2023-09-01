@@ -3,19 +3,19 @@
 SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
 . $SCRIPT_DIR/../defaults.sh
 
-#rm -rf $CPU_VENV
+rm -rf $CPU_VENV
 
 module load gcc
 module load python/3.9.15
 
-#python3 -m venv $CPU_VENV
+python3 -m venv $CPU_VENV
 
 . $CPU_VENV/bin/activate
 
-#python -m pip install cmake
-#python -m pip install numpy==1.23
-#python -m pip install pennylane
-#
+python -m pip install cmake
+python -m pip install numpy==1.23
+python -m pip install pennylane
+
 echo $CPU_VENV
 cd $CPU_VENV
 
@@ -26,8 +26,6 @@ else
 	git clone https://github.com/PennyLaneAI/pennylane-lightning-kokkos
 	cd pennylane-lightning-kokkos
 fi
-
-#rm -rf build
 
 export CRAYPE_LINK_TYPE=dynamic
 cmake -B build -DCMAKE_CXX_COMPILER=cc -DKokkos_ENABLE_OPENMP=ON -DPLKOKKOS_BUILD_TESTS=OFF

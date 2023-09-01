@@ -141,10 +141,11 @@ for qubits in $(seq $qubits_min $qubits_max); do
 			;;
 		pass)
 			echo "Skipping tests for $qubits qubits."
+			break 1
 			;;
 		*)
 			echo "Test at $depth depth with $qubits qubits failed, concluding tests for $ansatz with $backend backend."
-			break
+			break 2
 			;;
 		esac
 
@@ -155,7 +156,7 @@ for qubits in $(seq $qubits_min $qubits_max); do
 			echo "Not enough time for next test, concluding tests for $ansatz with $backend backend."
 			printf "Suspended benchmark at:\n" >$output_dir/suspend.txt
 			printf "qubits:$qubits\ndepth:$depth\n" >$output_dir/suspend.txt
-			break
+			break 2
 		fi
 	done
 

@@ -2,10 +2,13 @@
 
 repeat=$1
 
+if [[ "$repeat" == "" ]]; then
+    echo "Repeat number not passed as an argument!"
+    exit
+fi
+
 SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
 . $SCRIPT_DIR/../../defaults.sh 
-
-echo $SCRIPT_DIR
 
 #SBATCH --account=pawsey0309
 #SBATCH --partition=work
@@ -20,7 +23,7 @@ echo $SCRIPT_DIR
 module load gcc
 module load python/3.9.15
 
-. venv/cpu/bin/activate
+. "$CPU_VENV"/bin/activate
  
 # ---
 # OpenMP settings
@@ -30,6 +33,6 @@ export OMP_PROC_BIND=close  #To bind (fix) threads (allocating them as close as 
  
 # ---
 # Temporal workaround for avoiding Slingshot issues on shared nodes:
-export FI_CXI_DEFAULT_VNI=$(od -vAn -N4 -tu < /dev/urandom)
+#export FI_CXI_DEFAULT_VNI=$(od -vAn -N4 -tu < /dev/urandom)
 
 bash evolution_benchmarks.sh -l 2 -h 28 -n 100 -r $repeat -t $(( 2 * 60 )) -i 31-08-2023 -o $BENCHMARK_ROOT/results -m grovers_search -a grovers_search -b default.qubit -P python
