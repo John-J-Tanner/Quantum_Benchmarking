@@ -23,8 +23,8 @@ VENV=$CPU_VENV
 
 # OpenMP settings
 export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
-export OMP_PLACES=cores   
-export OMP_PROC_BIND=close 
+#export OMP_PLACES=cores   
+#export OMP_PROC_BIND=close 
  
 # Exporting environment variables required in evolution_benchmarks.sh.
 export SLURM_NTASKS=$SLURM_NTASKS

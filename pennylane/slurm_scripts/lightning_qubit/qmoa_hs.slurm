@@ -29,4 +29,4 @@ echo "SLURM_NTASKS $SLURM_NTASKS"
 export SLURM_CPUS_PER_TASK=$SLURM_CPUS_PER_TASK
 echo "SLURM_CPUS_PER_TASK $SLURM_CPUS_PER_TASK"
 
-bash "$BENCHMARK_ROOT"/evolution_benchmarks.sh -l 2 -h 28 -n 100 -r $repeat -t $(( 12 * 60 * 60 )) -i 31-08-2023 -o "$BENCHMARK_ROOT"/results -m qmoa_styblinski_tang -a qmoa_complete_ST_evolution_HS -b lightning.qubit -P python -p 4 
+bash "$BENCHMARK_ROOT"/evolution_benchmarks.sh -l 2 -h 28 -n 100 -r $repeat -t $(( 12 * 60 * 60 )) -i $BENCHMARK_RUN_ID -o "$BENCHMARK_ROOT"/results -m qmoa_styblinski_tang -a qmoa_complete_ST_evolution_HS -b lightning.qubit -P python -p 4 
