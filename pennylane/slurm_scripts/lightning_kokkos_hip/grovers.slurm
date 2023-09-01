@@ -12,8 +12,15 @@ module load gcc
 module load rocm/5.4.3
 module load python/3.9.15
 
+repeat=$1
+SCRIPT_DIR=$2
+
+. $SCRIPT_DIR/../../defaults.sh
+
+VENV=$GPU_VENV
+
 # Check environment, activate Python venv.
-. setup.sh $1 $GPU_VENV
+. $SCRIPT_DIR/../setup.sh
 
 # OpenMP settings
 export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK

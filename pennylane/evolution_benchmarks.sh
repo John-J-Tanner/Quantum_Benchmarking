@@ -126,8 +126,10 @@ for qubits in $(seq $qubits_min $qubits_max); do
 		*)
 			if [ $NGPUS -gt 0 ]; then
 				output=$(srun -N $NNODES -n $NTASKS -c $CPUS_PER_TASK --gpus=$NGPUS $launch_command)
+				wait
 			else
 				output=$(srun -N $NNODES -n $NTASKS -c $CPUS_PER_TASK $launch_command)
+				wait
 			fi
 			;;
 		esac

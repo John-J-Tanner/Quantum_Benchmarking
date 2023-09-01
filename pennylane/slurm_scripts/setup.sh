@@ -1,5 +1,3 @@
-repeat=$1
-
 if [[ "$repeat" == "" ]]; then
     echo "Repeat number not passed as an argument!"
     exit
@@ -10,11 +8,6 @@ if [[ "$BENCHMARK_ROOT" == "" ]]; then
     exit
 fi
 
-VENV_PATH="${2:=undefined}"
-if [ "$VENV_PATH" == "" ]; then
-    "VENV does not exist, use scripts in Quantum_benchmarks/pennylane to setup Python virtual environments."
-fi
-
-. "$2"/bin/activate
+. $VENV/bin/activate
  
 
