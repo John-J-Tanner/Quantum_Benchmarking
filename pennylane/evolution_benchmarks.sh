@@ -81,6 +81,7 @@ printf "\tCPUS_PER_TASK: $CPUS_PER_TASK\n"
 
 output_dir="$results_rootdir"/"$benchmark_set_ID"
 output_name=$output_dir/${repeat_num}_${NTASKS}_${CPUS_PER_TASK}_${NGPUS}_$(echo $backend | tr . _)_${ansatz}.csv
+output_suspend_name=$output_dir/${repeat_num}_${NTASKS}_${CPUS_PER_TASK}_${NGPUS}_$(echo $backend | tr . _)_${ansatz}_suspend.txt
 mkdir -p "$output_dir"
 printf "\nOutput path: $output_name\n"
 
@@ -154,8 +155,8 @@ for qubits in $(seq $qubits_min $qubits_max); do
 
 		if [ $time_test -le 0 ]; then
 			echo "Not enough time for next test, concluding tests for $ansatz with $backend backend."
-			printf "Suspended benchmark at:\n" >$output_dir/suspend.txt
-			printf "qubits:$qubits\ndepth:$depth\n" >$output_dir/suspend.txt
+			printf "Suspended benchmark at:\n" >$output_suspend_name
+			printf "qubits:$qubits\ndepth:$depth\n" >>$output_suspend_name
 			break 2
 		fi
 	done
