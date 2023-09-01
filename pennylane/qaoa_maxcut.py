@@ -17,6 +17,7 @@ def gen_graph(qubits, seed):
     # ensure that there is at least one edge
     n_edges = 0
     while n_edges == 0:
+        seed += 1
         G = nx.fast_gnp_random_graph(qubits, p=prob, seed=seed, directed=False)
         n_edges = G.number_of_edges()
     return G
