@@ -80,7 +80,7 @@ printf "\tNTASKS: $NTASKS\n"
 printf "\tCPUS_PER_TASK: $CPUS_PER_TASK\n"
 
 output_dir="$results_rootdir"/"$benchmark_set_ID"
-output_name=$output_dir/${repeat_num}_$(echo $backend | tr . _)_${ansatz}.csv
+output_name=$output_dir/${repeat_num}_${NTASKS}_${CPUS_PER_TASK}_${NGPUS}_$(echo $backend | tr . _)_${ansatz}.csv
 mkdir -p "$output_dir"
 printf "\nOutput path: $output_name\n"
 
