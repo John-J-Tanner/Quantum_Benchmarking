@@ -13,7 +13,7 @@ module load rocm/5.4.3
 module load python/3.9.15
 
 # Check environment, activate Python venv.
-. ../setup.sh $1 $GPU_VENV
+. setup.sh $1 $GPU_VENV
 
 # OpenMP settings
 export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK

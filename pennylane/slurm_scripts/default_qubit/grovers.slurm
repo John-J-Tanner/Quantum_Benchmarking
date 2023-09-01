@@ -12,7 +12,7 @@ module load gcc
 module load python/3.9.15
 
 # Check environment, activate Python venv.
-. ../setup.sh $1 $CPU_VENV
+. setup.sh $1 $CPU_VENV
 
 # OpenMP settings
 export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
