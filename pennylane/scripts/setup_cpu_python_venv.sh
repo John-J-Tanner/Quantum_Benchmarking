@@ -1,6 +1,6 @@
 #!/bin/bash
 
-SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
+SCRIPT_DIR="$(dirname "$(readlink -f -- "$0")")"
 . $SCRIPT_DIR/../defaults.sh
 
 rm -rf $CPU_VENV
@@ -29,6 +29,6 @@ fi
 
 export CRAYPE_LINK_TYPE=dynamic
 cmake -B build -DCMAKE_CXX_COMPILER=cc -DKokkos_ENABLE_OPENMP=ON -DPLKOKKOS_BUILD_TESTS=OFF
-cmake --build build --verbose --parallel ${SLURM_CPUS_PER_TASK}
+cmake --build build --verbose --parallel $(nproc)
 
 python -m pip install .
