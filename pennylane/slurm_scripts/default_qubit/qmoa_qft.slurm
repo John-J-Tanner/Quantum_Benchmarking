@@ -4,9 +4,8 @@
 #SBATCH --ntasks=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=1
-#SBATCH --mem=16000M
+#SBATCH --mem=8000M
 #SBATCH --time=12:00:00
-#SBATCH --export=ALL
 
 module load gcc
 module load python/3.9.15
@@ -25,4 +24,4 @@ echo "SLURM_NTASKS $SLURM_NTASKS"
 export SLURM_CPUS_PER_TASK=$SLURM_CPUS_PER_TASK
 echo "SLURM_CPUS_PER_TASK $SLURM_CPUS_PER_TASK"
 
-bash evolution_benchmarks.sh -l 2 -h 28 -n 100 -r $repeat -t $(( 12 * 60 * 60 )) -i $BENCHMARK_RUN_ID -o "$BENCHMARK_ROOT"/results -m grovers_search -a grovers_search -b default.qubit -P python
+bash "$BENCHMARK_ROOT"/evolution_benchmarks.sh -l 2 -h 28 -n 100 -r $repeat -t $(( 12 * 60 * 60 )) -i $BENCHMARK_RUN_ID -o "$BENCHMARK_ROOT"/results -m qmoa_styblinski_tang -a qmoa_complete_ST_evolution_QFT -b default.qubit -P python -p 4

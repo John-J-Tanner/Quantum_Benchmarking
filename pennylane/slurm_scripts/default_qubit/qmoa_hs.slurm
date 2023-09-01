@@ -4,9 +4,8 @@
 #SBATCH --ntasks=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=1
-#SBATCH --mem=16000M
+#SBATCH --mem=8000M
 #SBATCH --time=12:00:00
-#SBATCH --export=ALL
 
 module load gcc
 module load python/3.9.15
@@ -16,13 +15,13 @@ module load python/3.9.15
 
 # OpenMP settings
 export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
-export OMP_PLACES=cores   
+export OMP_PLACES=cores
 export OMP_PROC_BIND=close 
  
-# Exporting environment variables required in evolution_benchmarks.sh.
+# Export evironment variables for evolution_benchmarks.sh
 export SLURM_NTASKS=$SLURM_NTASKS
 echo "SLURM_NTASKS $SLURM_NTASKS"
 export SLURM_CPUS_PER_TASK=$SLURM_CPUS_PER_TASK
 echo "SLURM_CPUS_PER_TASK $SLURM_CPUS_PER_TASK"
 
-bash evolution_benchmarks.sh -l 2 -h 28 -n 100 -r $repeat -t $(( 12 * 60 * 60 )) -i $BENCHMARK_RUN_ID -o "$BENCHMARK_ROOT"/results -m grovers_search -a grovers_search -b default.qubit -P python
+bash "$BENCHMARK_ROOT"/evolution_benchmarks.sh -l 2 -h 28 -n 100 -r $repeat -t $(( 12 * 60 * 60 )) -i $BENCHMARK_RUN_ID -o "$BENCHMARK_ROOT"/results -m qmoa_styblinski_tang -a qmoa_complete_ST_evolution_HS -b default.qubit -P python -p 4 
