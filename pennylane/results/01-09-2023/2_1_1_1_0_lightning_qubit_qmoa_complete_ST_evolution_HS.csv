@@ -1,0 +1,5 @@
+repeat,ansatz,backend,qubits,depth,n_expval,last_expval,func_time,circuit_time,wall_time,n_nodes,n_cpus,n_gpus
+2,qmoa_complete_ST_evolution_HS,lightning.qubit,20,32,100,17.231654089836837,1345.36949634552,1345.0926501750946,1347.736863897,1,1,0
+2,qmoa_complete_ST_evolution_HS,lightning.qubit,24,1,100,-21.336499902302197,5616.3189816474915,5616.0718948841095,5619.169474298,1,1,0
+2,qmoa_complete_ST_evolution_HS,lightning.qubit,24,2,100,-47.235417359413546,9638.39083313942,9638.141946315765,9640.073179117,1,1,0
+2,qmoa_complete_ST_evolution_HS,lightning.qubit,24,4,100,1.0030287105519244,15791.48325252533,15791.22598528862,15792.998781762,1,1,0

@@ -3,7 +3,7 @@
 SCRIPT_DIR="$(dirname "$(readlink -f -- "$0")")"
 . $SCRIPT_DIR/../defaults.sh
 
-rm -rf $CPU_VENV
+#rm -rf $CPU_VENV
 
 module load gcc
 module load python/3.9.15
@@ -32,3 +32,6 @@ cmake -B build -DCMAKE_CXX_COMPILER=cc -DKokkos_ENABLE_OPENMP=ON -DPLKOKKOS_BUIL
 cmake --build build --verbose --parallel $(nproc)
 
 python -m pip install .
+
+python -m pip install qiskit-aer
+python -m pip install pennylane-qiskit
