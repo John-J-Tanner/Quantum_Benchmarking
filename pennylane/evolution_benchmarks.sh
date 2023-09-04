@@ -89,22 +89,25 @@ printf "\nOutput path: $output_name\n"
 #
 # Header for results file:
 #
-# 	repeats:	 	repeat number
-# 	ansatz: 		name of the state-evolution benchmark function
-# 	backend:	 	Pennylane simulation backend used
-# 	qubits: 		number of simulated qubits
-#	depth: 			simulated circuit depth
-#	n_expval:  		number of expectation value evaluations
-#	last_expval:	last expectation value, should be the same for all simulation backends
-#	func_time:		in-program time (seconds) taken call the state-evolution benchmark function
-#	circuit_time:	in-program time (seconds) taken to carry out the state evolutions (excludes setup steps)
-#	wall_time:		program wall time
-#	n_nodes:		number of nodes (SLURM_NNODES)
-#	n_cpus:			number of CPUs per task (SLURM_CPUS_PER_TASK)
-#	n_gpus:			number of GPUS (SLURM_GPUS)
+# 	repeats:	 		repeat number
+# 	ansatz: 			name of the state-evolution benchmark function
+# 	backend:	 		Pennylane simulation backend used
+# 	qubits: 			number of simulated qubits
+#	depth: 				simulated circuit depth
+#	n_expval:  			number of expectation value evaluations
+#	last_expval:		last expectation value, should be the same for all simulation backends
+#	func_time:			in-program time (seconds) taken call the state-evolution benchmark function
+# 	gate_depth:			circuit depth in terms of gates 
+#	one_qubit_gates:	number of one-qubit gates (e.g. Pauli gates)
+#	two_qubit_gates:	number of two-qubit gates (e.g. CNOT)
+#	circuit_time:		in-program time (seconds) taken to carry out the state evolutions (excludes setup steps)
+#	wall_time:			program wall time
+#	n_nodes:			number of nodes (SLURM_NNODES)
+#	n_cpus:				number of CPUs per task (SLURM_CPUS_PER_TASK)
+#	n_gpus:				number of GPUS (SLURM_GPUS)
 #
 
-echo repeat,ansatz,backend,qubits,depth,n_expval,last_expval,func_time,circuit_time,wall_time,n_nodes,n_cpus,n_gpus >$output_name
+echo repeat,ansatz,backend,qubits,depth,n_expval,last_expval,func_time,circuit_time,wall_time,n_nodes,n_cpus,n_gpus,one_qubit_gates,two_qubit_gates >$output_name
 
 bench_start=$(date +%s)
 time_remaining=$benchmark_time_limit
