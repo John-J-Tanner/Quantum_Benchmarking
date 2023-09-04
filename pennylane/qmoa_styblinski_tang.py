@@ -250,8 +250,11 @@ def qmoa_complete_ST_evolution_HS(device, depth, n_expvals, seed, qubits_per_dim
         )
         ts = np.split(rng.uniform(0, 2 * np.pi, dim * depth), depth)
         expval = circuit(gammas, ts)
-    return float(np.mean(expval)), time() - start
-
+    end = time()
+    specs = qml.specs(circuit)
+    gate_sizes = specs(gammas, ts)['resources'].gate_sizes
+    circuit_depth = specs(gammas, ts)['resources'].depth
+    return float(expval), end - start, circuit_depth, gate_sizes[1], gate_sizes[2]
 
 def qmoa_complete_ST_evolution_QFT(device, depth, n_expvals, seed, qubits_per_dim):
     """Compute the state-evolution of the QMOA unitary solving for the
@@ -318,4 +321,15 @@ def qmoa_complete_ST_evolution_QFT(device, depth, n_expvals, seed, qubits_per_di
         )
         ts = np.split(rng.uniform(0, 2 * np.pi, dim * depth), depth)
         expval = circuit(gammas, ts)
-    return float(np.mean(expval)), time() - start
+    end = time()
+    specs = qml.specs(circuit)
+    gate_sizes = specs(gammas, ts)['resources'].gate_sizes
+    circuit_depth = specs(gammas, ts)['resources'].depth
+    return float(expval), end - start, circuit_depth, gate_sizes[1], gate_sizes[2]
+
+if __name__ == '__main__':
+    qubits = 8
+    device = qml.device("lightning.qubit", wires=qubits)
+    depth = 2
+    print(qmoa_complete_ST_evolution_HS(device, depth, 1, 42, 4))
+
