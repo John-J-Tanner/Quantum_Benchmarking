@@ -111,7 +111,6 @@ def grovers_search_qft(device, depth, n_expvals, seed, *args):
     start = time()
     rng = qml.numpy.random.default_rng(seed)
     gammas_ts = qml.numpy.array([qml.numpy.pi for i in range(depth)] + [qml.numpy.pi/2**qubits for _ in range(depth)])
-    print(gammas_ts)
     marked_int = rng.integers(0, 2**qubits)
     H = diagonal_pauli_decompose(csr_array(([1], ([marked_int], [0])), shape = (2**qubits, 1)))
     for _ in range(n_expvals):
