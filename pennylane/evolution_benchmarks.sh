@@ -107,7 +107,7 @@ printf "\nOutput path: $output_name\n"
 #	n_gpus:				number of GPUS (SLURM_GPUS)
 #
 
-echo repeat,ansatz,backend,qubits,depth,n_expval,last_expval,func_time,circuit_time,wall_time,n_nodes,n_cpus,n_gpus,one_qubit_gates,two_qubit_gates >$output_name
+echo repeat,ansatz,backend,qubits,depth,n_expval,last_expval,func_time,gate_depth,one_qubit_gates,two_qubit_gates,circuit_time,wall_time,n_nodes,n_cpus,n_gpus >$output_name
 
 bench_start=$(date +%s)
 time_remaining=$benchmark_time_limit
