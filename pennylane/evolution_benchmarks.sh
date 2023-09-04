@@ -80,8 +80,8 @@ printf "\tNTASKS: $NTASKS\n"
 printf "\tCPUS_PER_TASK: $CPUS_PER_TASK\n"
 
 output_dir="$results_rootdir"/"$benchmark_set_ID"
-output_name=$output_dir/${repeat_num}_${NTASKS}_${CPUS_PER_TASK}_${NGPUS}_$(echo $backend | tr . _)_${ansatz}.csv
-output_suspend_name=$output_dir/${repeat_num}_${NTASKS}_${CPUS_PER_TASK}_${NGPUS}_$(echo $backend | tr . _)_${ansatz}_suspend.txt
+output_name=$output_dir/${repeat_num}_${NNODES}_${NTASKS}_${CPUS_PER_TASK}_${NGPUS}_$(echo $backend | tr . _)_${ansatz}.csv
+output_suspend_name=$output_dir/${repeat_num}_${NNODES}_${NTASKS}_${CPUS_PER_TASK}_${NGPUS}_$(echo $backend | tr . _)_${ansatz}_suspend.txt
 mkdir -p "$output_dir"
 printf "\nOutput path: $output_name\n"
 
@@ -126,10 +126,8 @@ for qubits in $(seq $qubits_min $qubits_max); do
 		*)
 			if [ $NGPUS -gt 0 ]; then
 				output=$(srun -N $NNODES -n $NTASKS -c $CPUS_PER_TASK --gpus=$NGPUS $launch_command)
-				wait
 			else
 				output=$(srun -N $NNODES -n $NTASKS -c $CPUS_PER_TASK $launch_command)
-				wait
 			fi
 			;;
 		esac
