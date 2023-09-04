@@ -90,7 +90,7 @@ def grovers_search_decomposed(device, depth, n_expvals, seed, *args):
     circuit_depth = specs(H,depth)['resources'].depth
     return float(expval), end - start, circuit_depth, gate_sizes[1], gate_sizes[2]
 
-def grovers_qft(device, depth, n_expvals, seed, *args):
+def grovers_search_qft(device, depth, n_expvals, seed, *args):
 
     qubits = len(device.wires)
 
