@@ -89,8 +89,13 @@ def qaoa_hypercube_maxcut_evolution(device, depth, n_expvals, seed):
     gammas_ts = rng.uniform(size=2 * depth, low=0, high=2 * qml.numpy.pi)
     for _ in range(n_expvals):
         expval = circuit(gammas_ts)
-    return float(expval), time() - start
-
+    specs = qml.specs(circuit)
+    gate_sizes = specs(gammas_ts)['resources'].gate_sizes
+    end = time()
+    specs = qml.specs(circuit)
+    gate_sizes = specs(gammas_ts)['resources'].gate_sizes
+    circuit_depth = specs(gammas_ts)['resources'].depth
+    return float(expval), end - start, circuit_depth, gate_sizes[1], gate_sizes[2]
 
 def qaoa_complete_maxcut_evolution(device, depth, n_expvals, seed):
     """State-evolution benchmark function for the QAOA with a complete-graph mixing operator.
@@ -137,4 +142,10 @@ def qaoa_complete_maxcut_evolution(device, depth, n_expvals, seed):
     gammas_ts = rng.uniform(size=2 * depth, low=0, high=2 * qml.numpy.pi)
     for _ in range(n_expvals):
         expval = circuit(gammas_ts)
-    return float(expval), time() - start
+    specs = qml.specs(circuit)
+    gate_sizes = specs(gammas_ts)['resources'].gate_sizes
+    end = time()
+    specs = qml.specs(circuit)
+    gate_sizes = specs(gammas_ts)['resources'].gate_sizes
+    circuit_depth = specs(gammas_ts)['resources'].depth
+    return float(expval), end - start, circuit_depth, gate_sizes[1], gate_sizes[2]
