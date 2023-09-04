@@ -43,7 +43,15 @@ ansatz_args = []
 for i in range(8, len(sys.argv)):
     ansatz_args.append(sys.argv[i])
 
-dev = qml.device(backend_name, wires=qubits)
+if backend_name == 'qiskit.aer':
+    dev = qml.device(
+            backend_name,
+            wires=qubits,
+            backend='aer_simulator_statevector',
+            statevector_parallel_threshold=1)
+else:
+    dev = qml.device(backend_name, wires=qubits)
+
 ansatz = getattr(importlib.import_module(ansatz_module), ansatz_name)
 start = time()
 result = ansatz(dev, depth, n_expvals, seed, *ansatz_args)
