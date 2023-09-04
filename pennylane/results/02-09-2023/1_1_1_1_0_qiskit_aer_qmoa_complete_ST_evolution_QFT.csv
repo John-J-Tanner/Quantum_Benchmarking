@@ -1,0 +1,5 @@
+repeat,ansatz,backend,qubits,depth,n_expval,last_expval,func_time,circuit_time,wall_time,n_nodes,n_cpus,n_gpus
+1,qmoa_complete_ST_evolution_QFT,qiskit.aer,12,1,100,-31.06413185596466,1701.31880235672,1701.2503955364227,1704.330850040,1,1,0
+1,qmoa_complete_ST_evolution_QFT,qiskit.aer,12,2,100,-23.43367338180542,3424.5005140304565,3424.4322698116302,3427.453962847,1,1,0
+1,qmoa_complete_ST_evolution_QFT,qiskit.aer,12,4,100,-25.307339429855347,6938.142253160477,6938.074795484543,6941.929628664,1,1,0
+1,qmoa_complete_ST_evolution_QFT,qiskit.aer,12,8,100,-17.10512936115265,14051.866695404053,14051.797677278519,14057.339367610,1,1,0
