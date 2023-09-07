@@ -1,0 +1,2 @@
+repeat,ansatz,backend,qubits,depth,n_expval,last_expval,func_time,circuit_time,wall_time,n_nodes,n_cpus,n_gpus
+1,qaoa_hypercube_maxcut_evolution,wavefront,10,1,100,-1.636945464467623,4.085152626037598,4.084640264511108,4.628236191,1,1,8
