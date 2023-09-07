@@ -1,3 +1,5 @@
 output
 venvs
 core
+*.swp
+*.pyc
