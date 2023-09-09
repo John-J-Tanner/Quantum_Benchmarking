@@ -35,7 +35,7 @@ echo "expval,qubits,depth,repeats,backend,graph_sparsity,simulation_time,circuit
 for qubit in ${qubits[@]}; do
 	for depth in ${depths[@]}; do
 		for sparse in ${sparsity[@]}; do
-			output_qasm=${SCRIPT_DIRECTORY}/circuits/${SLURM_JOB_ID}_${qubits}_${depth}_$(echo $sprase | tr . _)_lightning_kokkos_hip.qasm
+			output_qasm=${SCRIPT_DIRECTORY}/circuits/${SLURM_JOB_ID}_${qubit}_${depth}_$(echo $sprase | tr . _)_lightning_kokkos_hip.qasm
 			output=$(srun -N 1 -n 1 -c 8 --gpus=1 --gpu-bind=closest python -m benchmark.qaoa_maxcut -q $qubit -d $depth -r 1 -G $sparse -b default.qubit -c $output_qasm)
 			echo $output >> $output_csv
 			sleep 0.5

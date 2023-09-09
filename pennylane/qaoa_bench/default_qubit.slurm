@@ -36,7 +36,7 @@ seed=0
 for qubit in ${qubits[@]}; do
 	for depth in ${depths[@]}; do
 		for sparse in ${sparsity[@]}; do
-			output_qasm=${SCRIPT_DIRECTORY}/circuits/${SLURM_JOB_ID}_${qubits}_${depth}_$(echo $sparse | tr . _)_default_qubit.qasm
+			output_qasm=${SCRIPT_DIRECTORY}/circuits/${SLURM_JOB_ID}_${qubit}_${depth}_$(echo $sparse | tr . _)_default_qubit.qasm
 			start_time=$(date +%s.%N)
 			output=$(srun -N 1 -n 1 -c 1 python -m benchmark.qaoa_maxcut -q $qubit -d $depth -r 1 -g $sparse -b default.qubit -c $output_qasm -s $seed)
 			end_time=$(date +%s.%N)
