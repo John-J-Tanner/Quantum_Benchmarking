@@ -1,0 +1,4 @@
+repeat,ansatz,backend,qubits,depth,n_expval,last_expval,func_time,gate_depth,one_qubit_gates,two_qubit_gates,circuit_time,wall_time,n_nodes,n_cpus,n_gpus
+1,qmoa_complete_ST_evolution_QFT,default.qubit,4,1,100,1.06855993237173,3.9472553730010986,3.8582265377044678,94,34,68,5.773841781,1,5,0
+1,qmoa_complete_ST_evolution_QFT,default.qubit,4,2,100,3.191572305839753,5.897554874420166,5.812991380691528,187,64,136,7.628088857,1,5,0
+1,qmoa_complete_ST_evolution_QFT,default.qubit,4,4,100,-2.1804024201602523,9.60865569114685,9.500585556030273,373,124,272,11.205600315,1,5,0
