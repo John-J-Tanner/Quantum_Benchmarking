@@ -1,8 +1,8 @@
 from time import time
+from scipy.sparse import csr_array
 import pennylane as qml
 import pennylane.numpy as np
-from unitaries import bin_array, diagonal_pauli_decompose, phase_shift, circulant_mixer, complete_eigenvalues
-from scipy.sparse import csr_array
+from .unitaries import bin_array, diagonal_pauli_decompose, phase_shift, circulant_mixer, complete_eigenvalues
  
 def _decomposition_with_one_worker(control_wires, target_wire, work_wire):
     """Decomposes the multi-controlled PauliX gate using the approach in Lemma 7.3 of
