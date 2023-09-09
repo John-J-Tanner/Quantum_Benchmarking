@@ -4,7 +4,7 @@
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --sockets-per-node=1
-#SBATCH --time=01:00:00
+#SBATCH --time=12:00:00
 #SBATCH --export=ALL
 #SBATCH --mem=16G
 
