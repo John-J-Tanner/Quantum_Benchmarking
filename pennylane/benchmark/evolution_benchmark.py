@@ -52,7 +52,7 @@ if backend_name == 'qiskit.aer':
 else:
     dev = qml.device(backend_name, wires=qubits)
 
-ansatz = getattr(importlib.import_module(ansatz_module), ansatz_name)
+ansatz = getattr(importlib.import_module(f'benchmark.{ansatz_module}'), ansatz_name)
 start = time()
 result = ansatz(dev, depth, n_expvals, seed, *ansatz_args)
 end = time()

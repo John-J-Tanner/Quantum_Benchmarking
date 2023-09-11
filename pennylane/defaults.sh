@@ -1,12 +1,10 @@
 #!/bin/bash
-export PENNYLANE_ROOT=$(dirname "$(readlink -f -- "$0")")
-export BENCHMARK_ROOT=$(pwd)
-export BENCHMARK_OUTPUT=$BENCHMARK_ROOT/output
-export PYTHON_VENV_DIR=$BENCHMARK_ROOT/venvs
+
+export PENNYLANE_ROOT="${BASH_SOURCE[${#BASH_SOURCE[@]} - 1]}"
+export PYTHON_VENV_DIR=$PENNYLANE_ROOT/venvs
 export CPU_VENV=$PYTHON_VENV_DIR/cpu
 export GPU_VENV=$PYTHON_VENV_DIR/gpu
-export BENCHMARK_RUN_ID=04-09-2023
-export BENCHMARK_DEFAULTS=set
+export AER_MPI_VENV=$PYTHON_VENV_DIR/aer_mpi
+export BENCHMARK_RUN_ID=11-09-2023
 
 mkdir -p $PYTHON_VENV_DIR
-mkdir -p $BENCHMARK_OUTPUT

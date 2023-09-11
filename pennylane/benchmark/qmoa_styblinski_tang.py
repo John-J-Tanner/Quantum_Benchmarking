@@ -5,7 +5,7 @@ from operator import matmul
 import pennylane as qml
 import pennylane.numpy as np
 import networkx as nx
-from toolkit import *
+from .toolkit import *
 from .unitaries import diagonal_pauli_decompose, phase_shift, complete_eigenvalues
 
 pauli_terms = {"X": X(0, 1), "Y": Y(0, 1), "Z": Z(0, 1), "I": I(1)}

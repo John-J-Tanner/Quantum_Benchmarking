@@ -78,11 +78,13 @@ def grovers_search_decomposed(device, depth, n_expvals, seed, *args):
                 qml.Hadamard(wire)
         return qml.probs(wires=wires)
 
-    start = time()
+
     rng = np.random.default_rng(seed)
+    
+    start = time()
+    marked_int = rng.integers(0, 2**qubits)
+    H = diagonal_pauli_decompose(csr_array(([1], ([marked_int], [0])), shape = (2**qubits, 1)))
     for _ in range(n_expvals):
-        marked_int = rng.integers(0, 2**qubits)
-        H = diagonal_pauli_decompose(csr_array(([1], ([marked_int], [0])), shape = (2**qubits, 1)))
         expval = circuit(H, depth)[marked_int]
     end = time()
     specs = qml.specs(circuit)
