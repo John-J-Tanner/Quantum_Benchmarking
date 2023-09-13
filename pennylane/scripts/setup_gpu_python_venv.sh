@@ -1,18 +1,18 @@
 #!/bin/bash
 
 SCRIPT_DIR="$(dirname "$(readlink -f -- "$0")")"
-. $SCRIPT_DIR/../defaults.sh
 
-#rm -rf $GPU_VENV
+. $SCRIPT_DIR/../defaults.sh
 
 mkdir -p $GPU_VENV
 
 module load rocm
-module load python/3.9.15
+module load python/3.10.10
+module load py-pip/23.1.2-py3.10.10
 
 python3 -m venv $GPU_VENV
 
- $GPU_VENV/bin/activate
+. $GPU_VENV/bin/activate
 
 python -m pip install pip --upgrade pip
 python -m pip install wheel
@@ -20,7 +20,6 @@ python -m pip install cmake
 python -m pip install numpy==1.23
 python -m pip install pennylane
 
-echo $GPU_VENV
 cd $GPU_VENV
 
 if [ -d "pennylane-lightning-kokkos" ]; then
@@ -31,10 +30,8 @@ else
 	cd pennylane-lightning-kokkos
 fi
 
-export PATH=$PATH:/opt/rocm/bin/
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/rocm/lib
-
-module load gcc
+#export PATH=$PATH:/opt/rocm/bin/
+#export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/rocm/lib
 
 rm -rf build
 
@@ -45,10 +42,11 @@ cmake -B build . \
 -DCMAKE_PREFIX_PATH=../kokkos \
 -DCMAKE_VERBOSE_MAKEFILE=ON \
 -DPLKOKKOS_ENABLE_WARNINGS=ON \
--DCMAKE_CXX_FLAGS="--offload-arch=gfx90a --gcc-toolchain=$(dirname $(which g++))/../snos/"
+-DCMAKE_CXX_FLAGS="--gcc-toolchain=$(dirname $(which g++))/../snos/" \
+-DKokkos_ARCH_VEGA90A=ON 
+
 cmake --build build --parallel $(nproc)
 
-#-DCMAKE_CXX_FLAGS="--offload-arch=gfx90a"
 python -m pip install .
 
 cd $SCRIPT_DIR/..
