@@ -30,9 +30,6 @@ else
 	cd pennylane-lightning-kokkos
 fi
 
-#export PATH=$PATH:/opt/rocm/bin/
-#export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/rocm/lib
-
 rm -rf build
 
 cmake -B build . \
@@ -42,8 +39,23 @@ cmake -B build . \
 -DCMAKE_PREFIX_PATH=../kokkos \
 -DCMAKE_VERBOSE_MAKEFILE=ON \
 -DPLKOKKOS_ENABLE_WARNINGS=ON \
--DCMAKE_CXX_FLAGS="--gcc-toolchain=$(dirname $(which g++))/../snos/" \
+-DCMAKE_CXX_FLAGS="--offload-arch=gfx90a --gcc-toolchain=$(dirname $(which g++))/../snos/" \
 -DKokkos_ARCH_VEGA90A=ON 
+
+files=$(grep -rl "#include <memory>" build)
+
+for file in $files; do
+	echo "Patching $file"
+	sed -i 's/#include <memory>/#ifdef __noinline__\
+		#define GCC12_RESTORE_NOINLINE\
+			#undef __noinline__\
+			#endif\
+			#include <memory>\
+			#ifdef GCC12_RESTORE_NOINLINE\
+			#undef GCC12_RESTORE_NOINLINE\
+			#define __noinline__ _attribute((noinline))\
+			#endif/g' $file
+done
 
 cmake --build build --parallel $(nproc)
 
