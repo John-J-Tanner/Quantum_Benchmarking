@@ -2,10 +2,10 @@ import sys
 from time import time
 import numpy as np
 import matplotlib.pyplot as plt
-from qiskit import visualization, QuantumCircuit, Aer, transpile, quantum_info, execute
+from qiskit import QuantumCircuit, quantum_info
 from qiskit.primitives import BackendEstimator
 from qiskit.utils import algorithm_globals
-from qiskit.providers.aer import AerSimulator
+from qiskit.providers.aer import AerSimulator, AerError
 
 def main_args():
 
@@ -65,7 +65,7 @@ if __name__ == "__main__":
 
     try:
         backend = AerSimulator(method = 'statevector', blocking_enable=True, blocking_qubits=blocking_qubits, shots = None)
-    except Aer.AerError as e:
+    except AerError as e:
         print(e)
 
     circ = QuantumCircuit(nqubits)
