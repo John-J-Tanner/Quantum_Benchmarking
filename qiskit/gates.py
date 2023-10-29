@@ -64,9 +64,7 @@ if __name__ == "__main__":
     algorithm_globals.random_seed = seed
 
     try:
-        #backend = Aer.get_backend('aer_simulator_statevector', shots = 0)
-        #backend.set_options(precision = 'double', blocking_enable = True, blocking_qubits = blocking_qubits)
-        backend = AerSimulator(method = 'statevector')
+        backend = AerSimulator(method = 'statevector', blocking_enable=True, blocking_qubits=blocking_qubits, shots = None)
     except Aer.AerError as e:
         print(e)
 
@@ -79,17 +77,12 @@ if __name__ == "__main__":
         add_gate(circ, nqubits, cnot_prob = pcnot)
 
 
-    result = execute(circ, backend, blocking_enable=True, blocking_qubits=23).result()
-    dict = result.to_dict()
-    print(dict['metadata'])
-    #meta = dict['metadata']
-    #myrank = meta['mpi_rank']
-    #op = quantum_info.SparsePauliOp.from_list([('Z'*nqubits, 1)])
+    op = quantum_info.SparsePauliOp.from_list([('Z'*nqubits, 1)])
 
-    #estimator = BackendEstimator(backend=backend)
+    estimator = BackendEstimator(backend=backend)
 
-    #start = time()
-    #for _ in range(repeats):
-    #    expval = estimator.run(circ, op).result().values
-    #end = time()
-    #print(f'{end-start},{nqubits},{ngates},{repeats},{seed},{pcnot},{expval[0]}', flush = True)
+    start = time()
+    for _ in range(repeats):
+        expval = estimator.run(circ, op).result().values
+    end = time()
+    print(f'{end-start},{nqubits},{ngates},{repeats},{seed},{pcnot},{expval[0]}', flush = True)
