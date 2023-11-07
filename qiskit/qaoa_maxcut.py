@@ -159,7 +159,7 @@ if __name__ == "__main__":
         circ.h(qubit)
 
     for i in range(depth):
-        circ.hamiltonian(Q, gammas[i], list(range(nqubits)), name = f"Q_{i}")
+        circ.hamiltonian(Q, gammas[i], list(range(nqubits)))
         circ.hamiltonian(H, np.abs(ts[i]), list(range(nqubits)))
 
     params_dict = {}
